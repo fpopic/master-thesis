@@ -34,21 +34,7 @@ project/plugins/project/
 .cache
 .lib/
 =======
-*.class
-*.log
-
 # sbt specific
-.cache
-.history
-.lib/
-dist/*
-target/
-lib_managed/
-src_managed/
-project/boot/
-project/plugins/project/
-
 # Scala-IDE specific
 .scala_dependencies
 .worksheet
->>>>>>> 2737b0edf00be3246cba2738aa11177bf0eed6e3

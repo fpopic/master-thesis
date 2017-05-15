@@ -30,6 +30,7 @@ object SparseVectorAlgebra extends Serializable {
       v2.map { case (k, v) => if (v1 contains k) v else 0 }.reduce(_ + _)
   }
 
+  // izlaz je parcijalna matrica
   def outer(vector1 : Map[Int, Double], vector2 : Map[Int, Double]) : Map[(Int, Int), Double] = {
     // same as flatMap (not for loop)
     for {
@@ -38,12 +39,12 @@ object SparseVectorAlgebra extends Serializable {
     } yield ((k1, k2), v1 * v2)
   }
 
+  // izlaz je parcijalna matrica
   def outer(vector1 : Set[Int], vector2 : Map[Int, Double]) : Map[(Int, Int), Double] = {
-    // same as flatMap (not for loop)
     vector1.flatMap {
       case (k1) =>
-        vector2.map { case (k2, v2) => ((k1, k2), v1 * v2) }
-    }
+        vector2.map { case (k2, v2) => ((k1, k2), v2) }
+    }.toMap
   }
 
 }
