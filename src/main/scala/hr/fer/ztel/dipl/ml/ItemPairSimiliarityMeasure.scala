@@ -1,4 +1,4 @@
-package hr.fer.ztel.dipl.model
+package hr.fer.ztel.dipl.ml
 
 trait ItemPairSimiliarityMeasure extends Serializable {
 

@@ -1,6 +1,5 @@
 <<<<<<< HEAD
-# Created by .ignore support plugin (hsz.mobi)
-### Java template
+
 # Compiled class file
 # Log file
 *.log
@@ -19,12 +18,7 @@
 *.tar.gz
 *.rar
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
-### Scala template
-### SBT template
-# Simple Build Tool
-# http://www.scala-sbt.org/release/docs/Getting-Started/Directories.html#configuring-version-control
 
 dist/*
 target/

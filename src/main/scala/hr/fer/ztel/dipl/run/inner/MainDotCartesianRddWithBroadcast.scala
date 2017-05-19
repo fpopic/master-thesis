@@ -1,6 +1,7 @@
 package hr.fer.ztel.dipl.run.inner
 
-import hr.fer.ztel.dipl.model.SparseVectorAlgebra._
+import hr.fer.ztel.dipl.ml.{CosineSimiliarityMeasure, ItemPairSimiliarityMeasure}
+import hr.fer.ztel.dipl.ml.SparseVectorAlgebra._
 import hr.fer.ztel.dipl.model._
 import org.apache.spark.sql.SparkSession
 
@@ -16,9 +17,9 @@ object MainDotCartesianRddWithBroadcast {
 
     val measure : ItemPairSimiliarityMeasure = new CosineSimiliarityMeasure
 
-    val itemItemMatrix = DataSource.createItemItemMatrix("src/main/resources/item_matrix_10.csv", measure)
+    val itemItemMatrix = MatrixDataSource.createItemItemMatrix("src/main/resources/item_matrix_10.csv", measure)
 
-    val customerItemMatrix = DataSource.createCustomerItemMatrix("src/main/resources/transactions_10.csv")
+    val customerItemMatrix = MatrixDataSource.createCustomerItemMatrix("src/main/resources/transactions_10.csv")
       .collect
 
     val customerItemMatrixBroadcasted = spark.sparkContext.broadcast(customerItemMatrix)
@@ -27,18 +28,16 @@ object MainDotCartesianRddWithBroadcast {
 
     val N = 5 // top n recommendations
 
-    val recommendations = itemItemMatrix.mapPartitions({ iter =>
-      val localCustomerItemMatrix = customerItemMatrixBroadcasted.value
-      iter.map {
-        case (itemId, itemVector) => localCustomerItemMatrix.map {
-          case (customerId, customerVector) => (customerId, (itemId, dot(customerVector, itemVector)))
-        }.toSeq
-      }.flatten
-    }, preservesPartitioning = true)
+    val recommendations = itemItemMatrix.mapPartitions({ partition =>
+        val localCustomerItemMatrix = customerItemMatrixBroadcasted.value
+        partition.map {
+          case (itemId, itemVector) => localCustomerItemMatrix.map {
+            case (customerId, customerVector) => (customerId, (itemId, dot(customerVector, itemVector)))
+          }.toSeq
+        }.flatten
+      }, preservesPartitioning = true)
       .groupByKey
-      .map {
-        case (customerId, utilities) => (customerId, utilities.toSeq.sortBy(_._2).takeRight(N).map(_._1))
-      }
+      .mapValues(utilities => utilities.toSeq.sortBy(_._2).takeRight(N).map(_._1))
 
     println(recommendations.count)
 

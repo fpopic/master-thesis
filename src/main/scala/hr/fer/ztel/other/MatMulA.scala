@@ -1,7 +1,5 @@
 package hr.fer.ztel.other
 
-;
-
 import org.apache.spark.mllib.linalg.distributed.{IndexedRow, IndexedRowMatrix}
 import org.apache.spark.mllib.linalg.{Matrices, Vectors}
 import org.apache.spark.sql.SparkSession
