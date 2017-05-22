@@ -1,9 +1,10 @@
-package hr.fer.ztel.dipl.model
+package hr.fer.ztel.dipl.datasource
 
 import hr.fer.ztel.dipl.ml.ItemPairSimiliarityMeasure
+import hr.fer.ztel.dipl.model._
 import org.apache.spark.Partitioner
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.SparkSession
 
 object MatrixDataSource extends Serializable {
 
@@ -95,15 +96,6 @@ object MatrixDataSource extends Serializable {
       .rdd
       .groupByKey
       .mapValues(itemVector => itemVector.toSet)
-  }
-
-  def collectCustomerIndexes(df : DataFrame) : Map[Int, Int] = {
-    //    d
-
-    //    val itemIndexes = (itemItemRecords.map (_.item1Id).distinct union itemItemRecords.map (_.item2Id).distinct).distinct
-
-    //    val itemIndexes = (itemItemRecords.select ('item1Id).distinct union itemItemRecords.select ('item2Id).distinct).distinct
-    Map.empty[Int, Int]
   }
 
 }

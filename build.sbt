@@ -8,16 +8,25 @@ lazy val root = (project in file(".")).settings(
   parallelExecution in Test := true
 )
 
-
 lazy val unprovidedDependencies = Seq(
-  "org.apache.spark" %% "spark-core" % "2.1.1" % "provided",
-  "org.apache.spark" %% "spark-sql" % "2.1.1" % "provided",
-  "org.apache.spark" %% "spark-mllib" % "2.1.1" % "provided",
-
   "com.github.fommil.netlib" % "all" % "1.1.2"
 )
 
 libraryDependencies ++= unprovidedDependencies
+
+lazy val providedDependencies = Seq(
+  "org.apache.spark" %% "spark-core" % "2.1.1",
+  "org.apache.spark" %% "spark-sql" % "2.1.1",
+  "org.apache.spark" %% "spark-mllib" % "2.1.1"
+)
+
+val dev = "fpopic" // used on local machine
+val user = sys.env.getOrElse("USER", dev)
+
+if (user == dev)
+  libraryDependencies ++= providedDependencies
+else
+  libraryDependencies ++= providedDependencies.map(_ % "provided")
 
 assemblyMergeStrategy in assembly := {
   case PathList("META-INF", "MANIFEST.MF") => MergeStrategy.discard

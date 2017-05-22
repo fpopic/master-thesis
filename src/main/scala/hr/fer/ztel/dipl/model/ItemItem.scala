@@ -6,7 +6,7 @@ package hr.fer.ztel.dipl.model
 // itemitem = 67052 x 67052 x 4B = 17 956 000 000 B ~ 18  GB
 // one row  = 1     x 67052 x 4B = 268 208          ~ 268 kB
 
-case class ItemItemRecord(item1Id : Int, item2Id : Int, a : Int, b : Int, c : Int, d : Int)
+case class ItemItemRecord(item1 : Int, item2 : Int, a : Int, b : Int, c : Int, d : Int)
 
 object ItemItemRecord {
 
@@ -25,4 +25,4 @@ object ItemItemRecord {
   }
 }
 
-case class ItemItemEntry(item1Index : Int, item2Index : Int, similarity : Double)
+case class ItemItemEntry(item1 : Int, item2 : Int, similarity : Double)

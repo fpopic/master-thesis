@@ -1,7 +1,8 @@
 package hr.fer.ztel.dipl.run.inner
 
+import hr.fer.ztel.dipl.datasource.MatrixDataSource
 import hr.fer.ztel.dipl.ml.{CosineSimiliarityMeasure, ItemPairSimiliarityMeasure}
-import hr.fer.ztel.dipl.ml.SparseVectorAlgebra._
+import hr.fer.ztel.dipl.ml.SparseLinearAlgebra._
 import hr.fer.ztel.dipl.model._
 import org.apache.spark.sql.SparkSession
 

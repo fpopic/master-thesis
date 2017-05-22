@@ -2,9 +2,9 @@ package hr.fer.ztel.dipl.model
 
 ////yyyanonCustID,date,anonItemID,quantity
 ////29'154'707 records (all ok)
-case class CustomerItem(customerId : Int, itemId : Int)
+case class CustomerItem(customer : Int, item : Int)
 
-case class CustomerItemRecord(customerId : Int, itemId : Int, quantity : Double)
+case class CustomerItemRecord(customer : Int, item : Int, quantity : Double)
 
 object CustomerItemRecord {
 
