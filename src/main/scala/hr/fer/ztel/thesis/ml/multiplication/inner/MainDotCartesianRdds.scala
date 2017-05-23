@@ -1,9 +1,8 @@
-package hr.fer.ztel.dipl.run.inner
+package hr.fer.ztel.thesis.ml.multiplication.inner
 
-import hr.fer.ztel.dipl.datasource.MatrixDataSource
-import hr.fer.ztel.dipl.ml.{CosineSimiliarityMeasure, ItemPairSimiliarityMeasure}
-import hr.fer.ztel.dipl.ml.SparseLinearAlgebra._
-import hr.fer.ztel.dipl.model._
+import hr.fer.ztel.thesis.datasource.MatrixDataSource._
+import hr.fer.ztel.thesis.ml.CosineSimilarityMeasure
+import hr.fer.ztel.thesis.ml.SparseLinearAlgebra._
 import org.apache.spark.sql.SparkSession
 
 object MainDotCartesianRdds {
@@ -18,11 +17,11 @@ object MainDotCartesianRdds {
 
     spark.conf.set("spark.sql.autoBroadcastJoinThreshold", "400000000")
 
-    val measure : ItemPairSimiliarityMeasure = new CosineSimiliarityMeasure
+    val measure = new CosineSimilarityMeasure
 
-    val itemItemMatrix = MatrixDataSource.createItemItemMatrix("src/main/resources/item_matrix_10.csv", measure)
+    val itemItemMatrix = createItemItemMatrix("src/main/resources/item_matrix_10.csv", measure)
 
-    val customerItemMatrix = MatrixDataSource.createCustomerItemMatrix("src/main/resources/transactions_10.csv")
+    val customerItemMatrix = createCustomerItemMatrix("src/main/resources/transactions_10.csv")
 
     val N = 5 // top n recommendations
 
@@ -31,7 +30,7 @@ object MainDotCartesianRdds {
         case ((customerId, customerVector), (itemId, itemVector)) => (customerId, (itemId, dot(customerVector, itemVector)))
       }
       .groupByKey
-      .mapValues(utilities => utilities.toSeq.sortBy(_._2).takeRight(N).map(_._1))
+      .mapValues(utilities => utilities.toArray.sortBy(_._2).takeRight(N).map(_._1))
 
     println(recommendationMatrix.count)
 

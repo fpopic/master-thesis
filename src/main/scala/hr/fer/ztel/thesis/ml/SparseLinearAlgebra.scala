@@ -1,4 +1,4 @@
-package hr.fer.ztel.dipl.ml
+package hr.fer.ztel.thesis.ml
 
 //noinspection SimplifiableFoldOrReduce
 object SparseLinearAlgebra extends Serializable {
@@ -26,16 +26,6 @@ object SparseLinearAlgebra extends Serializable {
         .reduce(_ + _)
   }
 
-  // outer
-
-  def addM(m1 : Map[(Int, Int), Double], m2 : Map[(Int, Int), Double]) : Map[(Int, Int), Double] = {
-    (m1.keySet union m2.keySet)
-      .map(k => (k, m1.getOrElse(k, 0.0) + m2.getOrElse(k, 0.0)))
-      .withFilter(_._2 != 0.0)
-      .map(t => t)
-      .toMap
-  }
-
   def outer(v1 : Map[Int, Double], v2 : Map[Int, Double]) : Map[(Int, Int), Double] = {
     // izlaz je parcijalna matrica
     /* v1 = 1 */
@@ -47,10 +37,29 @@ object SparseLinearAlgebra extends Serializable {
     } yield ((key1, key2), mul)
   }
 
+  def normalize(v : Map[Int, Double]) : Map[Int, Double] = {
+    val norm = v.reduce((a, b) => (a._1, a._2 + b._2))._2
+    if (norm != 0.0)
+      v.map { case (key, value) => (key, value / norm) }
+    else
+      v
+  }
+
+  //
+
+  def addM(m1 : Map[(Int, Int), Double], m2 : Map[(Int, Int), Double]) : Map[(Int, Int), Double] = {
+    (m1.keySet union m2.keySet)
+      .map(k => (k, m1.getOrElse(k, 0.0) + m2.getOrElse(k, 0.0)))
+      .withFilter(_._2 != 0.0)
+      .map(t => t)
+      .toMap
+  }
+
   ////////////////////////////////// bool values //////////////////////////////////
 
-  def dot(v1 : Set[Int], v2 : Map[Int, Double]) : Double = {
-    if (v1.size <= v2.size)
+
+  def dot(v1 : Array[Int], v2 : Map[Int, Double]) : Double = {
+    if (v1.length <= v2.size)
       v1.map(v2.getOrElse(_, 0.0))
         .withFilter(_ != 0.0)
         .map(v => v)
@@ -62,14 +71,14 @@ object SparseLinearAlgebra extends Serializable {
         .reduce(_ + _)
   }
 
-  def outer(vector1 : Set[Int], vector2 : Map[Int, Double]) : Map[(Int, Int), Double] = {
+  def outer(vector1 : Array[Int], vector2 : Map[Int, Double]) : Map[(Int, Int), Double] = {
     // izlaz je parcijalna matrica
     /* v1 = 1 */
-    val set = for {
+    val array = for {
       k1 <- vector1 // v1 = 1
       (k2, v2) <- vector2
     } yield ((k1, k2), v2) // 1 * v2
-    set.toMap
+    array.toMap
   }
 
 }

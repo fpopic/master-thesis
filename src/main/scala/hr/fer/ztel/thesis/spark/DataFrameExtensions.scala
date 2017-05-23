@@ -1,4 +1,4 @@
-package hr.fer.ztel.dipl.datasource
+package hr.fer.ztel.thesis.spark
 
 object DataFrameExtensions {
 

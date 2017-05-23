@@ -9,15 +9,21 @@ lazy val root = (project in file(".")).settings(
 )
 
 lazy val unprovidedDependencies = Seq(
-  "com.github.fommil.netlib" % "all" % "1.1.2"
+  // "com.github.fommil.netlib" % "all" % "1.1.2",
+
+  "org.scalactic" %% "scalactic" % "3.0.1",
+  "org.scalatest" %% "scalatest" % "3.0.1" % "test"
+ //  "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % "test"
 )
 
 libraryDependencies ++= unprovidedDependencies
 
+val sparkVersion = "2.1.0.cloudera1"
+
 lazy val providedDependencies = Seq(
-  "org.apache.spark" %% "spark-core" % "2.1.1",
-  "org.apache.spark" %% "spark-sql" % "2.1.1",
-  "org.apache.spark" %% "spark-mllib" % "2.1.1"
+  "org.apache.spark" %% "spark-core" % sparkVersion,
+  "org.apache.spark" %% "spark-sql" % sparkVersion,
+  "org.apache.spark" %% "spark-mllib" % sparkVersion
 )
 
 val dev = "fpopic" // used on local machine
@@ -33,3 +39,8 @@ assemblyMergeStrategy in assembly := {
   case PathList("org", "apache", "spark", "unused", "UnusedStubClass.class") => MergeStrategy.first
   case x => (assemblyMergeStrategy in assembly).value(x)
 }
+
+resolvers ++= Seq(
+  "pentaho-releases" at "http://repository.pentaho.org/artifactory/repo/",
+  "Artima Maven Repository" at "http://repo.artima.com/releases"
+)

@@ -1,4 +1,4 @@
-package hr.fer.ztel.other
+package hr.fer.ztel.zother
 
 import org.apache.spark.mllib.linalg.distributed.{IndexedRow, IndexedRowMatrix}
 import org.apache.spark.mllib.linalg.{Matrices, Vectors}

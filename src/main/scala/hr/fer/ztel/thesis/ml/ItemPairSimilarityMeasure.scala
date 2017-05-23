@@ -1,11 +1,22 @@
-package hr.fer.ztel.dipl.ml
+package hr.fer.ztel.thesis.ml
 
-trait ItemPairSimiliarityMeasure extends Serializable {
+trait ItemPairSimilarityMeasure extends Serializable {
+
+  /**
+    * Normalizing an item-similarity vector to ensure that the
+    * sum of all similaritiy entries for an item equals to 1.0
+    */
+  val normalize : Boolean = true
 
   /*
-   *  sim(x,x) = 0.0 default, could be overriden
+   *  Sim(x,x) = 0.0 default, could be overridden
    */
-  val reflexiveMeasure : Double = 0.0
+  val reflexiveEntryMeasure : Double = 0.0
+
+  /**
+    * Depends on measure domain, could be overridden
+    */
+  val missingEntryMeasure : Double = 0.0
 
   /**
     *
@@ -23,7 +34,7 @@ trait ItemPairSimiliarityMeasure extends Serializable {
 /**
   * YuleQ [-1, 1]
   */
-class YuleQSimiliarityMeasure extends ItemPairSimiliarityMeasure {
+class YuleQSimilarityMeasure(override val normalize : Boolean = true) extends ItemPairSimilarityMeasure {
 
   def compute(a : Int, b : Int, c : Int, d : Int) : Double = (a * d - b * c) / (a * d + b * c)
 
@@ -32,7 +43,7 @@ class YuleQSimiliarityMeasure extends ItemPairSimiliarityMeasure {
 /**
   * Cosine [0, 1]
   */
-class CosineSimiliarityMeasure extends ItemPairSimiliarityMeasure {
+class CosineSimilarityMeasure(override val normalize : Boolean = true) extends ItemPairSimilarityMeasure {
 
   def compute(a : Int, b : Int, c : Int, d : Int) : Double = a / math.sqrt((a + b) * (a + c))
 
@@ -41,7 +52,7 @@ class CosineSimiliarityMeasure extends ItemPairSimiliarityMeasure {
 /**
   * LogLikelihood [0, INF]
   */
-class LogLikelihoodSimiliarityMeasure extends ItemPairSimiliarityMeasure {
+class LogLikelihoodSimilarityMeasure(override val normalize : Boolean = true) extends ItemPairSimilarityMeasure {
 
   def compute(a : Int, b : Int, c : Int, d : Int) : Double = {
 

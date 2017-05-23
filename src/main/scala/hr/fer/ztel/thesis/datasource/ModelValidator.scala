@@ -1,12 +1,6 @@
-package hr.fer.ztel.dipl.model
+package hr.fer.ztel.thesis.datasource
 
-////yyyanonCustID,date,anonItemID,quantity
-////29'154'707 records (all ok)
-case class CustomerItem(customer : Int, item : Int)
-
-case class CustomerItemRecord(customer : Int, item : Int, quantity : Double)
-
-object CustomerItemRecord {
+object ModelValidator extends Serializable {
 
   def isParsableCustomerItemRecord(parts : Array[String]) : Boolean = {
 
@@ -30,6 +24,20 @@ object CustomerItemRecord {
 
   }
 
-  def isBought(quantity : Double) : Double = if (quantity >= 1) 1.0 else 0.0
+  def isParsableItemItemRecord(parts : Array[String]) : Boolean = {
+
+    // (itemId1, itemId2, a, b, c, d)
+    if (parts.length != 6) return false
+
+    try {
+      parts.map(_.toInt)
+      true
+    }
+
+    catch {
+      case (_ : NumberFormatException) => false
+    }
+
+  }
 
 }
