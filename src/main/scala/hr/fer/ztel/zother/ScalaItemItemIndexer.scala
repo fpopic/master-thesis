@@ -2,11 +2,11 @@ package hr.fer.ztel.zother
 
 import java.io.FileWriter
 
-import hr.fer.ztel.thesis.datasource.ModelValidator
+import hr.fer.ztel.thesis.datasource.DataSourceModelValidator
 
 import scala.io.Source
 
-object LocalIndexer extends Serializable {
+object ScalaItemItemIndexer extends Serializable {
   def transformItemIdsToIndexes(inputPath : String, outputPath : String, lookupPath : String) : Unit = {
 
     var lineCounter = 0
@@ -24,7 +24,7 @@ object LocalIndexer extends Serializable {
     inputFile.getLines.foreach {
       line => {
         val t = line.split(",")
-        if (ModelValidator.isParsableItemItemRecord(t)) {
+        if (DataSourceModelValidator.isParsableItemItemRecord(t)) {
           val itemId1 = t(0).toInt
           val itemId2 = t(1).toInt
           val itemIndex1 = lookup.getOrElseUpdate(itemId1, {counter = counter + 1; counter})

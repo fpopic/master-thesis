@@ -1,6 +1,6 @@
 package hr.fer.ztel.thesis.datasource
 
-object ModelValidator extends Serializable {
+object DataSourceModelValidator extends Serializable {
 
   def isParsableCustomerItemRecord(parts : Array[String]) : Boolean = {
 

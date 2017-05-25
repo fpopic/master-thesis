@@ -1,6 +1,6 @@
 package hr.fer.ztel.thesis.spark
 
-import breeze.linalg.{SparseVector => BreezeSparseVector}
+import breeze.linalg.{SparseVector => BreezeSparseVector, DenseVector=>BreezeDenseVector}
 import com.esotericsoftware.kryo.Kryo
 import org.apache.spark.serializer.KryoRegistrator
 
@@ -13,6 +13,7 @@ object SparseKryoRegistrator extends KryoRegistrator {
     kryo.register(classOf[Map[(Int, Int), Double]]) // matrix
 
     // breeze sparse linear algebra
+    kryo.register(classOf[BreezeDenseVector[Double]])
     kryo.register(classOf[BreezeSparseVector[Double]])
     kryo.register(classOf[Array[Double]])
   }

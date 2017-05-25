@@ -1,6 +1,6 @@
 package hr.fer.ztel.thesis.datasource
 
-import hr.fer.ztel.thesis.datasource.ModelValidator.{isParsableCustomerItemRecord, isParsableItemItemRecord}
+import hr.fer.ztel.thesis.datasource.DataSourceModelValidator.{isParsableCustomerItemRecord, isParsableItemItemRecord}
 import hr.fer.ztel.thesis.ml.ItemPairSimilarityMeasure
 import org.apache.spark.Partitioner
 import org.apache.spark.broadcast.Broadcast
@@ -64,15 +64,15 @@ object MatrixDataSource extends Serializable {
           val localBoughtItems = boughtItems.value.toSet
           partition.flatMap(
             t => {
-              val (itemId1, itemId2, a, b, c, d) =
+              val (item1, item2, a, b, c, d) =
                 (t(0).toInt, t(1).toInt, t(2).toInt, t(3).toInt, t(4).toInt, t(5).toInt)
               val similarity = measure.compute(a, b, c, d)
               // associative item-item entries (x, y) (y, x)
               val array = ArrayBuffer.empty[(Int, (Int, Double))]
-              if (localBoughtItems contains itemId1)
-                array += (itemId1 -> (itemId2, similarity))
-              if (localBoughtItems contains itemId1)
-                array += (itemId2 -> (itemId1, similarity))
+              if (localBoughtItems contains item1)
+                array += (item1 -> (item2, similarity))
+              if (localBoughtItems contains item1)
+                array += (item2 -> (item1, similarity))
               if (array.nonEmpty) array else None
             }
           )

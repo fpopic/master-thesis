@@ -1,6 +1,6 @@
 package hr.fer.ztel.thesis.datasource
 
-import hr.fer.ztel.thesis.datasource.ModelValidator.{isParsableCustomerItemRecord, isParsableItemItemRecord}
+import hr.fer.ztel.thesis.datasource.DataSourceModelValidator.{isParsableCustomerItemRecord, isParsableItemItemRecord}
 import hr.fer.ztel.thesis.ml.ItemPairSimilarityMeasure
 import org.apache.spark.Partitioner
 import org.apache.spark.rdd.RDD

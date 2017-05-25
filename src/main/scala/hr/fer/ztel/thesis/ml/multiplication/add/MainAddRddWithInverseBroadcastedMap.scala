@@ -16,7 +16,7 @@ object MainAddRddWithInverseBroadcastedMap {
       .config("spark.sql.warehouse.dir", "/media/fpopic/Data/spark-warehouse")
       .getOrCreate
 
-    val measure : ItemPairSimilarityMeasure = new CosineSimilarityMeasure
+    val measure = new CosineSimilarityMeasure
 
     val itemItemMatrix = createItemItemMatrix("src/main/resources/item_matrix_10.csv", measure)
 

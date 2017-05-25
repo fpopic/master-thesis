@@ -1,10 +1,10 @@
 package hr.fer.ztel.thesis.ml.multiplication.block
 
-import hr.fer.ztel.thesis.datasource.IndexedMatrixDataSource._
+
+import hr.fer.ztel.thesis.datasource.MatrixEntryDataSoruce
 import hr.fer.ztel.thesis.ml.CosineSimilarityMeasure
 import hr.fer.ztel.thesis.spark.SparkSessionHolder
-import hr.fer.ztel.thesis.spark.SparkSessionHolder._
-import org.apache.spark.HashPartitioner
+import org.apache.spark.mllib.linalg.distributed.{CoordinateMatrix, MatrixEntry}
 import org.apache.spark.rdd.RDD
 
 object BlockMatrixMultiplication {
@@ -13,19 +13,39 @@ object BlockMatrixMultiplication {
 
     implicit val spark = SparkSessionHolder.getSession
 
-    val itemsLookup = persistItemIdIndexLookup(itemItemInputPath, ItemsLookupPath)
-    val customersLookup = persistCustomerIdIndexLookup(customerItemInputPath, customersLookupPath)
+    import SparkSessionHolder._
 
-    val partitioner = Some(new HashPartitioner(16))
-    val measure = new CosineSimilarityMeasure
+    val measure = new CosineSimilarityMeasure(normalize = true)
 
-    val itemItemMatrix : RDD[(Int, Map[Int, Double])] =
-      createItemItemMatrix(itemItemInputPath, measure, itemsLookup, partitioner)
+    val itemItemMatrix : RDD[MatrixEntry] =
+      MatrixEntryDataSoruce.readItemItemEntries(itemItemInputPath, measure)
 
-    val itemCustomerMatrix : RDD[(Int, Array[Int])] =
-      createItemCustomerMatrix(customerItemInputPath, itemsLookup, customersLookup, partitioner)
+    val customerItemMatrix : RDD[MatrixEntry] =
+      MatrixEntryDataSoruce.readCustomerItemEntries(customerItemInputPath)
 
-    // sad raditi sa ove matrice a tek na kraju vratiti id-eve
+    val numCustomers : Int = ??? // ili iz c++ ili nakon filtera qunatity >= 1  napraviti distinct
+    val numItems : Int = ??? // mogu iz c++ lako O(1) lookup.size
+
+    val rowsPerBlock = 1024
+    val colsPerBlock = 1024
+
+    val C = new CoordinateMatrix(customerItemMatrix, numCustomers, numItems)
+      .toBlockMatrix(rowsPerBlock, colsPerBlock)
+
+    val S = new CoordinateMatrix(itemItemMatrix, numItems, numItems)
+      .toBlockMatrix(rowsPerBlock, colsPerBlock)
+
+    import breeze.linalg.argtopk
+    import org.apache.spark.mllib.linalg.MLlibBreezeExtensions._
+
+    val topK = 5 // recommendations
+
+    val R = (C multiply S)
+      .toIndexedRowMatrix
+      .rows
+      .map(row => (row.index.toInt, argtopk(row.vector.toBreeze, topK)))
+
+    //todo
 
 
   }
