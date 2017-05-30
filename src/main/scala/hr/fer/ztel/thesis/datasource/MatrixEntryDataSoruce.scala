@@ -18,7 +18,7 @@ object MatrixEntryDataSoruce extends Serializable {
       .map(_.split(","))
       .filter(isParsableCustomerItemRecord(_))
       .map {
-        case Array(customer, _, item, quantity) => (customer.toInt, item.toInt, quantity.toDouble)
+        case Array(customer, item, quantity) => (customer.toInt, item.toInt, quantity.toDouble)
       }
       .toDF("customer", "item", "quantity")
       .groupBy("customer", "item")
@@ -42,7 +42,7 @@ object MatrixEntryDataSoruce extends Serializable {
       .map(_.split(","))
       .filter(isParsableCustomerItemRecord(_))
       .map {
-        case Array(customer, _, item, quantity) => (item.toInt, customer.toInt, quantity.toDouble)
+        case Array(customer, item, quantity) => (item.toInt, customer.toInt, quantity.toDouble)
       }
       .toDF("item", "customer", "quantity")
       .groupBy("item", "customer")

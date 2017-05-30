@@ -1,4 +1,4 @@
-package hr.fer.ztel.zother
+package hr.fer.ztel.excluded
 
 import java.io.FileWriter
 

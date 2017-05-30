@@ -7,24 +7,19 @@ import hr.fer.ztel.thesis.spark.SparkSessionHandler
 import org.apache.spark.mllib.linalg.distributed.CoordinateMatrix
 import org.apache.spark.sql.SaveMode
 
-object BlockMatrixMultiplication {
+object BlockMatrices {
 
   def main(args : Array[String]) : Unit = {
-
-    if (args.length != 4) {
-      println(SparkSessionHandler.argsMessage)
-      System exit 1
-    }
 
     val handler = new SparkSessionHandler(args)
     implicit val spark = handler.getSparkSession
 
-    val measure = new CosineSimilarityMeasure(normalize = true)
+    val measure = new CosineSimilarityMeasure(handler.normalize)
 
     val customerItemEntries = MatrixEntryDataSoruce.readCustomerItemEntries(handler.customerItemPath)
     val itemItemEntries = MatrixEntryDataSoruce.readItemItemEntries(handler.itemItemPath, measure)
 
-    // ako se koriste manji datasetovi potrebno ih indeksirati ispocetka
+    // precomputed
     val numCustomers = spark.sparkContext.textFile(handler.customersSizePath, 1).first.toInt
     val numItems = spark.sparkContext.textFile(handler.itemsSizePath, 1).first.toInt
 

@@ -9,15 +9,10 @@ object InnerCartesianRdds {
 
   def main(args : Array[String]) : Unit = {
 
-    if (args.length != 4) {
-      println(SparkSessionHandler.argsMessage)
-      System exit 1
-    }
-
     val handler = new SparkSessionHandler(args)
     implicit val spark = handler.getSparkSession
 
-    val measure = new CosineSimilarityMeasure
+    val measure = new CosineSimilarityMeasure(handler.normalize)
 
     val itemItemMatrix = readItemItemMatrix(handler.itemItemPath, measure)
 

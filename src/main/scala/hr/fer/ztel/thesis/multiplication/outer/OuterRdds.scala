@@ -12,15 +12,10 @@ object OuterRdds {
 
   def main(args : Array[String]) : Unit = {
 
-    if (args.length != 4) {
-      println(SparkSessionHandler.argsMessage)
-      System exit 1
-    }
-
     val handler = new SparkSessionHandler(args)
     implicit val spark : SparkSession = handler.getSparkSession
 
-    val measure = new CosineSimilarityMeasure
+    val measure = new CosineSimilarityMeasure(handler.normalize)
     val partitioner = Some(new HashPartitioner(16))
 
     val itemCustomerMatrix : RDD[(Int, Array[Int])] = // (item, [customer])

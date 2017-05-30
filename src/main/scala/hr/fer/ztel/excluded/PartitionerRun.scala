@@ -1,4 +1,4 @@
-package hr.fer.ztel.zother
+package hr.fer.ztel.excluded
 
 import org.apache.spark.HashPartitioner
 import org.apache.spark.sql.SparkSession
