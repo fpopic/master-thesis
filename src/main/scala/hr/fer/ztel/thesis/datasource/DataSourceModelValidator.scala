@@ -4,16 +4,16 @@ object DataSourceModelValidator extends Serializable {
 
   def isParsableCustomerItemRecord(parts : Array[String]) : Boolean = {
 
-    // customerId, date, userId, quantity
-    if (parts.length != 4) {
+    // customerId, date, userId, quantity //todo
+    if (parts.length != 3) { //todo
       return false
     }
 
     try {
       parts(0).toInt
-      //parts(1) is date but it's not used
-      parts(2).toInt
-      parts(3).toDouble
+      //parts(1) is date but it's not used //todo
+      parts(1).toInt//todo
+      parts(2).toDouble//todo
       true
     }
 

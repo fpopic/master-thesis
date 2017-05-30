@@ -6,11 +6,7 @@ import org.apache.spark.sql.SparkSession
 object PartitionerRun {
   def main(args : Array[String]) : Unit = {
 
-    implicit val spark = SparkSession.builder
-      .master("local[*]")
-      .config("spark.sql.shuffle.partitions", "4") // za lokalno
-      .config("spark.sql.warehouse.dir", "/media/fpopic/Data/spark-warehouse")
-      .getOrCreate
+    implicit val spark = SparkSession.builder.getOrCreate
 
     val partitioner = new HashPartitioner(partitions = 4)
 

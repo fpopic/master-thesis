@@ -18,7 +18,7 @@ object MatrixEntryDataSoruce extends Serializable {
       .map(_.split(","))
       .filter(isParsableCustomerItemRecord(_))
       .map {
-        case Array(customer, _, item, quantity) => (customer, item, quantity.toDouble)
+        case Array(customer, _, item, quantity) => (customer.toInt, item.toInt, quantity.toDouble)
       }
       .toDF("customer", "item", "quantity")
       .groupBy("customer", "item")
@@ -42,7 +42,7 @@ object MatrixEntryDataSoruce extends Serializable {
       .map(_.split(","))
       .filter(isParsableCustomerItemRecord(_))
       .map {
-        case Array(customer, _, item, quantity) => (item, customer, quantity.toDouble)
+        case Array(customer, _, item, quantity) => (item.toInt, customer.toInt, quantity.toDouble)
       }
       .toDF("item", "customer", "quantity")
       .groupBy("item", "customer")
@@ -65,7 +65,6 @@ object MatrixEntryDataSoruce extends Serializable {
       .map(_.split(","))
       .filter(isParsableItemItemRecord(_))
       .map(t => (t(0).toInt, t(1).toInt, t(2).toInt, t(3).toInt, t(4).toInt, t(5).toInt))
-      .cache
 
     if (measure.normalize)
       itemItemRDD

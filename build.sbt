@@ -2,17 +2,19 @@ lazy val root = (project in file(".")).settings(
   name := "spark-recommender",
   version := "1.0",
   scalaVersion := "2.11.8",
-  organization := "hr.fer.ztel",
-  //mainClass in Compile := Some("hr.fer.ztel.dipl.run.add.MainAddInversJoinRdds"),
+  organization := "Faculty of Electrical Engineering and Computing, University of Zagreb",
+  startYear := Some(2017),
+  mainClass in Compile := Some("hr.fer.ztel.thesis.Main"),
   assemblyOption in assembly := (assemblyOption in assembly).value.copy(includeScala = false),
-  parallelExecution in Test := true
+  parallelExecution in Test := true,
+  test in assembly := {} // remove if you want to start tests
 )
 
 lazy val unprovidedDependencies = Seq(
-   "com.github.fommil.netlib" % "all" % "1.1.2",
+//  "com.github.fommil.netlib" % "all" % "1.1.2"
 
-  "org.scalactic" %% "scalactic" % "3.0.1",
-  "org.scalatest" %% "scalatest" % "3.0.1" % "test"
+//  "org.scalactic" %% "scalactic" % "3.0.1",
+//  "org.scalatest" %% "scalatest" % "3.0.1" % "test"
 )
 
 libraryDependencies ++= unprovidedDependencies
@@ -25,21 +27,15 @@ lazy val providedDependencies = Seq(
   "org.apache.spark" %% "spark-mllib" % sparkVersion
 )
 
-val dev = "fpopic" // used on local machine
-val user = sys.env.getOrElse("USER", dev)
-
-if (user == dev)
-  libraryDependencies ++= providedDependencies
-else
-  libraryDependencies ++= providedDependencies.map(_ % "provided")
+libraryDependencies ++= providedDependencies.map(_ % "provided")
 
 assemblyMergeStrategy in assembly := {
   case PathList("META-INF", "MANIFEST.MF") => MergeStrategy.discard
   case PathList("org", "apache", "spark", "unused", "UnusedStubClass.class") => MergeStrategy.first
-  case x => (assemblyMergeStrategy in assembly).value(x)
+  case _ => MergeStrategy.first
 }
 
 resolvers ++= Seq(
-  "pentaho-releases" at "http://repository.pentaho.org/artifactory/repo/",
+  "Cloudera Maven repository" at "https://repository.cloudera.com/artifactory/cloudera-repos",
   "Artima Maven Repository" at "http://repo.artima.com/releases"
 )

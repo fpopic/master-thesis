@@ -11,7 +11,7 @@ import scala.collection.mutable.ArrayBuffer
 
 object MatrixDataSource extends Serializable {
 
-  def createItemItemMatrix(path : String, measure : ItemPairSimilarityMeasure,
+  def readItemItemMatrix(path : String, measure : ItemPairSimilarityMeasure,
     partitioner : Option[Partitioner] = None)
     (implicit spark : SparkSession) : RDD[(Int, Map[Int, Double])] = {
 
@@ -49,7 +49,7 @@ object MatrixDataSource extends Serializable {
       itemVectors.mapValues(itemVector => itemVector.toMap)
   }
 
-  def createBoughtItemItemMatrix(path : String, measure : ItemPairSimilarityMeasure,
+  def readBoughtItemItemMatrix(path : String, measure : ItemPairSimilarityMeasure,
     boughtItems : Broadcast[Array[Int]], partitioner : Option[Partitioner] = None)
     (implicit spark : SparkSession) : RDD[(Int, Map[Int, Double])] = {
 
@@ -101,7 +101,7 @@ object MatrixDataSource extends Serializable {
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  def createItemCustomerMatrix(path : String, partitioner : Option[Partitioner] = None)
+  def readItemCustomerMatrix(path : String, partitioner : Option[Partitioner] = None)
     (implicit spark : SparkSession) : RDD[(Int, Array[Int])] = {
 
     import spark.implicits._
@@ -111,7 +111,7 @@ object MatrixDataSource extends Serializable {
       .map(_.split(","))
       .filter(isParsableCustomerItemRecord(_))
       .map {
-        case Array(customerId, _, itemId, quantity) => (itemId.toInt, customerId.toInt, quantity.toDouble)
+        case Array(customerId, itemId, quantity) => (itemId.toInt, customerId.toInt, quantity.toDouble)
       }
       .toDF("item", "customer", "quantity")
       .groupBy("item", "customer")
@@ -132,7 +132,7 @@ object MatrixDataSource extends Serializable {
         .mapValues(customerVector => customerVector.toArray)
   }
 
-  def createCustomerItemMatrix(path : String)
+  def readCustomerItemMatrix(path : String)
     (implicit spark : SparkSession) : RDD[(Int, Array[Int])] = {
 
     import spark.implicits._

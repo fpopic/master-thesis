@@ -1,5 +1,0 @@
-    // args: "<CUSTOMER-ITEM-FILE> <ITEM-ITEM-FILE> <OUTPUT-PATH>"
-
-    //    val customerItemFile = args.applyOrElse(0, "src/main/resources/transactions_10.csv").toString
-    //    val itemItemFile = args.applyOrElse(1, "src/main/resources/transactions_10.csv")
-    //    val outputPath = args.applyOrElse(2, "")

@@ -6,7 +6,7 @@ import hr.fer.ztel.thesis.datasource.DataSourceModelValidator
 
 import scala.io.Source
 
-object ScalaItemItemIndexer extends Serializable {
+object ScalaIndexer extends Serializable {
   def transformItemIdsToIndexes(inputPath : String, outputPath : String, lookupPath : String) : Unit = {
 
     var lineCounter = 0
