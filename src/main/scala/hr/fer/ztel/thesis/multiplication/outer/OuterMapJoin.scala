@@ -1,60 +1,64 @@
 package hr.fer.ztel.thesis.multiplication.outer
 
-import hr.fer.ztel.thesis.datasource.MatrixDataSource.{readItemCustomerMatrix, readItemItemMatrix}
+import hr.fer.ztel.thesis.datasource.MatrixDataSource.{readBoughtItemItemMatrix, readItemUserMatrix}
 import hr.fer.ztel.thesis.ml.CosineSimilarityMeasure
-import hr.fer.ztel.thesis.ml.SparseLinearAlgebra._
+import hr.fer.ztel.thesis.ml.SparseVectorOperators._
 import hr.fer.ztel.thesis.spark.SparkSessionHandler
+import org.apache.spark.broadcast.Broadcast
+import org.apache.spark.rdd.RDD
 
 object OuterMapJoin {
 
-  def main(args : Array[String]) : Unit = {
+  def main(args: Array[String]): Unit = {
 
     val handler = new SparkSessionHandler(args)
     implicit val spark = handler.getSparkSession
 
     val measure = new CosineSimilarityMeasure(handler.normalize)
 
-    val itemItemMatrix = readItemItemMatrix(handler.itemItemPath, measure)
+    val itemUserMatrix = readItemUserMatrix(handler.userItemPath)
 
-    val itemCustomerMatrix = readItemCustomerMatrix(handler.customerItemPath)
+    // to reduce join (shuffle size), discarding all unmatched rows/cols in item-item matrix
+    val broadcastedBoughtItems = spark.sparkContext.broadcast(itemUserMatrix.keys.collect)
 
-    val itemCustomerMatrixBroadcasted = spark.sparkContext.broadcast(
-      itemCustomerMatrix.collect
-    )
+    val boughtItemItemMatrix: RDD[(Int, Map[Int, Double])] = // (item, [item, sim])
+      readBoughtItemItemMatrix(handler.itemItemPath, measure, broadcastedBoughtItems)
 
-    itemCustomerMatrix.unpersist(true)
+    broadcastedBoughtItems.unpersist()
+
+    val itemUserMatrixBroadcasted: Broadcast[Array[(Int, Array[Int])]] =
+      spark.sparkContext.broadcast(itemUserMatrix.collect)
+
+    itemUserMatrix.unpersist(true)
 
     val k = handler.topK
 
-    // map-join
-    val recommendations = itemItemMatrix
-      .mapPartitions({
-        val localItemCustomerMap = itemCustomerMatrixBroadcasted.value.toMap
-        _.flatMap {
-          case (itemId, itemVector) =>
-            val customerVector = localItemCustomerMap.get(itemId)
-            if (customerVector.isDefined) {
-              //println(s"Match for item: $itemId")
-              outer(customerVector.get, itemVector)
-            }
-            else {
-              //println(s"No match for item: $itemId")
-              None
-            }
+    val recommendations = boughtItemItemMatrix
+      .mapPartitions {
+        val localItemUserMap = itemUserMatrixBroadcasted.value.toMap
+        _.flatMap { case (item, itemVector) =>
+          // map-join
+          val userVector = localItemUserMap.get(item)
+          if (userVector.isDefined) {
+            //println(s"Match for item: $item")
+            outer(userVector.get, itemVector)
+          }
+          else {
+            //println(s"No match for item: $item")
+            None
+          }
         }
-      })
+      }
       .reduceByKey(_ + _)
-      .map {
-        case ((customerId, itemId), utility) => (customerId, (itemId, utility))
+      .map { case ((user, item), utility) => (user, (item, utility))
       }
       .groupByKey
-      .map {
-        case (customer, utilities) =>
-          val items = utilities.toArray.sortBy(_._2).map(_._1).takeRight(k)
-          s"$customer:${items.mkString(",")}"
+      .map { case (user, utilities) =>
+        val items = utilities.toArray.sortBy(_._2).map(_._1).takeRight(k)
+        s"$user:${items.mkString(",")}"
       }
 
-    itemItemMatrix.unpersist()
+    boughtItemItemMatrix.unpersist()
 
     println(s"Recommendations: ${recommendations.count} saved in: ${handler.recommendationsPath}.")
 

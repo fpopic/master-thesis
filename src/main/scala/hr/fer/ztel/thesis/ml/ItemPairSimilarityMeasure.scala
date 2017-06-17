@@ -3,20 +3,20 @@ package hr.fer.ztel.thesis.ml
 trait ItemPairSimilarityMeasure extends Serializable {
 
   /**
-    * Normalizing an item-similarity vector to ensure that the
+    * Normalizing the item-similarity vector to ensure that the
     * sum of all similaritiy entries for an item equals to 1.0
     */
-  val normalize : Boolean = true
+  val normalize: Boolean = true
 
   /*
-   *  Sim(x,x) = 0.0 default, could be overridden
+   *  sim(x,x) = 0.0 default, could be overridden
    */
-  val reflexiveEntryMeasure : Double = 0.0
+  val reflexiveEntryMeasure: Double = 0.0
 
   /**
-    * Depends on measure domain, could be overridden
+    * Depends on a measure domain, could be overridden
     */
-  val missingEntryMeasure : Double = 0.0
+  val missingEntryMeasure: Double = 0.0
 
   /**
     *
@@ -27,34 +27,34 @@ trait ItemPairSimilarityMeasure extends Serializable {
     *
     * @return similarity between a pair of items
     */
-  def compute(a : Int, b : Int, c : Int, d : Int) : Double
+  def compute(a: Int, b: Int, c: Int, d: Int): Double
 
 }
 
 /**
   * YuleQ [-1, 1]
   */
-class YuleQSimilarityMeasure(override val normalize : Boolean = true) extends ItemPairSimilarityMeasure {
+class YuleQSimilarityMeasure(override val normalize: Boolean = true) extends ItemPairSimilarityMeasure {
 
-  def compute(a : Int, b : Int, c : Int, d : Int) : Double = (a * d - b * c) / (a * d + b * c)
+  def compute(a: Int, b: Int, c: Int, d: Int): Double = (a * d - b * c) / (a * d + b * c)
 
 }
 
 /**
   * Cosine [0, 1]
   */
-class CosineSimilarityMeasure(override val normalize : Boolean = true) extends ItemPairSimilarityMeasure {
+class CosineSimilarityMeasure(override val normalize: Boolean = true) extends ItemPairSimilarityMeasure {
 
-  def compute(a : Int, b : Int, c : Int, d : Int) : Double = a / math.sqrt((a + b) * (a + c))
+  def compute(a: Int, b: Int, c: Int, d: Int): Double = a / math.sqrt((a + b) * (a + c))
 
 }
 
 /**
   * LogLikelihood [0, INF]
   */
-class LogLikelihoodSimilarityMeasure(override val normalize : Boolean = true) extends ItemPairSimilarityMeasure {
+class LogLikelihoodSimilarityMeasure(override val normalize: Boolean = true) extends ItemPairSimilarityMeasure {
 
-  def compute(a : Int, b : Int, c : Int, d : Int) : Double = {
+  def compute(a: Int, b: Int, c: Int, d: Int): Double = {
 
     /**
       *
@@ -64,12 +64,12 @@ class LogLikelihoodSimilarityMeasure(override val normalize : Boolean = true) ex
       *
       * @return entropy measure [0, 1]
       */
-    def H(x : Int*) : Double = {
+    def H(x: Int*): Double = {
       import math.log10
 
-      val b = x.length
+      val base = x.length
 
-      def logB(x_ : Double) = log10(x_) / log10(b)
+      def logB(x_ : Double) = log10(x_) / log10(base)
 
       val xs = x.product
 

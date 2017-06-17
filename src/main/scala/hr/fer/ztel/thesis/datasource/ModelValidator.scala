@@ -1,10 +1,10 @@
 package hr.fer.ztel.thesis.datasource
 
-object DataSourceModelValidator extends Serializable {
+object ModelValidator extends Serializable {
 
-  def isParsableCustomerItemRecord(parts : Array[String]) : Boolean = {
+  def isParsableUserItemRecord(parts : Array[String]) : Boolean = {
 
-    // customerId, date, userId, quantity //todo
+    // user, date, user, quantity //todo
     if (parts.length != 3) { //todo
       return false
     }
@@ -26,7 +26,7 @@ object DataSourceModelValidator extends Serializable {
 
   def isParsableItemItemRecord(parts : Array[String]) : Boolean = {
 
-    // (itemId1, itemId2, a, b, c, d)
+    // (item1, item2, a, b, c, d)
     if (parts.length != 6) return false
 
     try {

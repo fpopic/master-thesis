@@ -3,10 +3,10 @@ package org.apache.spark.mllib.linalg
 import breeze.linalg.{Vector => BreezeVector}
 import org.apache.spark.mllib.linalg.{Vector => MLlibVector}
 
-object MLlibBreezeExtensions {
+object MLlibBreezeConversions {
 
   implicit class MLlibVectorPublications(val vector : MLlibVector) extends AnyVal {
-    def toBreeze : BreezeVector[scala.Double] = vector.asBreeze
+    def toBreeze : BreezeVector[Double] = vector.asBreeze
   }
 
   implicit class BreezeVectorPublications(val breezeVector : BreezeVector[Double]) extends AnyVal {
@@ -14,4 +14,3 @@ object MLlibBreezeExtensions {
   }
 
 }
-

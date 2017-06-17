@@ -33,6 +33,8 @@ object MatMulA {
       0, 1, 1, 1, 0
     ))
 
+    C.
+
     val s = Matrices.sparse(numCols = 4, numRows = 5,
       colPtrs = Array(),
       rowIndices = Array(),

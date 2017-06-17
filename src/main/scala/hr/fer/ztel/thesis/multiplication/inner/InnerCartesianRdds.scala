@@ -2,8 +2,9 @@ package hr.fer.ztel.thesis.multiplication.inner
 
 import hr.fer.ztel.thesis.datasource.MatrixDataSource._
 import hr.fer.ztel.thesis.ml.CosineSimilarityMeasure
-import hr.fer.ztel.thesis.ml.SparseLinearAlgebra._
+import hr.fer.ztel.thesis.ml.SparseVectorOperators._
 import hr.fer.ztel.thesis.spark.SparkSessionHandler
+import org.apache.spark.rdd.RDD
 
 object InnerCartesianRdds {
 
@@ -14,27 +15,25 @@ object InnerCartesianRdds {
 
     val measure = new CosineSimilarityMeasure(handler.normalize)
 
-    val itemItemMatrix = readItemItemMatrix(handler.itemItemPath, measure)
+    val itemItemMatrix: RDD[(Int, Map[Int, Double])] = readItemItemMatrix(handler.itemItemPath, measure)
 
-    val customerItemMatrix = readCustomerItemMatrix(handler.customerItemPath)
+    val userItemMatrix: RDD[(Int, Array[Int])] = readUserItemMatrix(handler.userItemPath)
 
     val k = handler.topK
 
-    val recommendations = (customerItemMatrix cartesian itemItemMatrix)
-      .map {
-        case ((customer, customerVector), (item, itemVector)) =>
-          (customer, (item, dot(customerVector, itemVector)))
+    val recommendationMatrix = (userItemMatrix cartesian itemItemMatrix)
+      .map { case ((user, userVector), (item, itemVector)) =>
+          (user, (item, dot(userVector, itemVector)))
       }
       .groupByKey
-      .map {
-        case (customer, utilities) =>
+      .map { case (user, utilities) =>
           val items = utilities.toArray.sortBy(_._2).map(_._1).takeRight(k)
-          s"$customer:${items.mkString(",")}"
+          s"$user:${items.mkString(",")}"
       }
 
-    recommendations.saveAsTextFile(handler.recommendationsPath)
+    recommendationMatrix.saveAsTextFile(handler.recommendationsPath)
 
-    println(s"Recommendations: ${recommendations.count} saved in: ${handler.recommendationsPath}.")
+    println(s"Recommendations: ${recommendationMatrix.count} saved in: ${handler.recommendationsPath}.")
 
   }
 
