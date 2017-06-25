@@ -16,8 +16,10 @@ object Main {
     --conf spark.memory.fraction=0.6 \
     --conf spark.yarn.maxAppAttempts=1 \
     /home/rovkp/fpopic/spark-recommender-assembly-1.0.jar \
-    4 hdfs:///user/rovkp/fpopic/ customer_matrix.csv.indexed item_matrix.csv.indexed false recommendations 5
+    4 hdfs:///user/rovkp/fpopic/ customer_matrix.csv.indexed item_matrix.csv.indexed cos false recommendations 5
   */
+
+  //TODO MEASURE PARSER treba ukljuciti
 
   def main(args : Array[String]) : Unit = {
 

@@ -1,6 +1,6 @@
 package hr.fer.ztel.thesis.ml
 
-trait ItemPairSimilarityMeasure extends Serializable {
+sealed trait ItemPairSimilarityMeasure extends Serializable {
 
   /**
     * Normalizing the item-similarity vector to ensure that the
@@ -9,7 +9,7 @@ trait ItemPairSimilarityMeasure extends Serializable {
   val normalize: Boolean = true
 
   /*
-   *  sim(x,x) = 0.0 default, could be overridden
+   *  sim(x, x) = 0.0 default, could be overridden
    */
   val reflexiveEntryMeasure: Double = 0.0
 
@@ -31,52 +31,68 @@ trait ItemPairSimilarityMeasure extends Serializable {
 
 }
 
+object ItemPairSimilarityMeasure extends Serializable {
+
+  def parseMeasure(measureStr: String, normalize: Boolean): Option[ItemPairSimilarityMeasure] = {
+    measureStr match {
+      case "cos" => Some(new CosineSimilarityMeasure(normalize))
+      case "llr" => Some(new LogLikelihoodRatioSimilarityMeasure(normalize))
+      case "yuleq" => Some(new YuleQSimilarityMeasure(normalize))
+      case _ =>
+        println(s""""Wrong similiarity measure: $measureStr! Supported measures: "cos", "llr", "yuleq"""")
+        System exit 1
+        None
+    }
+  }
+
+}
+
 /**
-  * YuleQ [-1, 1]
+  * Yule's Q similarity measure [-1, +1]
   */
 class YuleQSimilarityMeasure(override val normalize: Boolean = true) extends ItemPairSimilarityMeasure {
 
-  def compute(a: Int, b: Int, c: Int, d: Int): Double = (a * d - b * c) / (a * d + b * c)
-
+  def compute(a: Int, b: Int, c: Int, d: Int): Double = {
+    val ad = a * d
+    val bc = b * c
+    val adbc = ad + bc
+    if (adbc == 0) 0.0 else (ad - bc) / adbc.toDouble
+  }
 }
 
 /**
-  * Cosine [0, 1]
+  * Cosine similarity measure [0, 1]
   */
 class CosineSimilarityMeasure(override val normalize: Boolean = true) extends ItemPairSimilarityMeasure {
 
-  def compute(a: Int, b: Int, c: Int, d: Int): Double = a / math.sqrt((a + b) * (a + c))
-
+  def compute(a: Int, b: Int, c: Int, d: Int): Double = {
+    if (a == 0) 0.5 else a / math.sqrt((a + b) * (a + c))
+  }
 }
 
 /**
-  * LogLikelihood [0, INF]
+  * Log-likelihood ratio [0, +INF]
+  *
+  * Source: Ted Dunning's mahout implementation:
+  *
+  * @see <a href="https://github.com/apache/mahout/blob/master/math/src/main/java/org/apache/mahout/math/stats
+  *      /LogLikelihood.java#L62-L111">Ted Dunning's mahout implementation</a>
   */
-class LogLikelihoodSimilarityMeasure(override val normalize: Boolean = true) extends ItemPairSimilarityMeasure {
+class LogLikelihoodRatioSimilarityMeasure(override val normalize: Boolean = true) extends ItemPairSimilarityMeasure {
 
   def compute(a: Int, b: Int, c: Int, d: Int): Double = {
 
-    /**
-      *
-      * Shannon's Entropy
-      *
-      * @param x vector of size [[b]]
-      *
-      * @return entropy measure [0, 1]
-      */
-    def H(x: Int*): Double = {
-      import math.log10
+    // x * log_e(x), nicely avoids log(0)
+    def xlogx(x: Int) = if (x == 0) 0.0 else x * math.log(x)
 
-      val base = x.length
+    // shannon's entropy, not normalized
+    def H(xs: Int*): Double = xlogx(xs.sum) - xs.foldLeft(0.0)(_ + xlogx(_))
 
-      def logB(x_ : Double) = log10(x_) / log10(base)
+    val matH = H(a, b, c, d)
+    val rowH = H(a + b, c + d)
+    val colH = H(a + c, b + d)
 
-      val xs = x.product
-
-      xs * logB(xs) - x.map(x => x * logB(x)).sum
-    }
-
-    2 * (a + b + c + d) * (H(a, b, c, d) - H(a + b, c + d) - H(a + c, b + d))
+    if (rowH + colH < matH) 0.0 else 2 * (rowH + colH - matH)
   }
 
 }

@@ -3,7 +3,7 @@ package hr.fer.ztel.excluded
 import org.apache.spark.mllib.linalg.distributed.{IndexedRow, IndexedRowMatrix}
 import org.apache.spark.mllib.linalg.{Matrices, Vectors}
 import org.apache.spark.sql.SparkSession
-
+/*
 object MatMulA {
 
   def main(args : Array[String]) : Unit = {
@@ -33,8 +33,6 @@ object MatMulA {
       0, 1, 1, 1, 0
     ))
 
-    C.
-
     val s = Matrices.sparse(numCols = 4, numRows = 5,
       colPtrs = Array(),
       rowIndices = Array(),
@@ -49,3 +47,4 @@ object MatMulA {
 
   }
 }
+*/

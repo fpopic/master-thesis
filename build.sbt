@@ -6,14 +6,14 @@ lazy val root = (project in file(".")).settings(
   startYear := Some(2017),
   mainClass in Compile := Some("hr.fer.ztel.thesis.Main"),
   assemblyOption in assembly := (assemblyOption in assembly).value.copy(includeScala = false),
-  parallelExecution in Test := true,
-  test in assembly := {} // remove if you want to start tests
+  parallelExecution in Test := true
+  //,test in assembly := {} // remove if you want to start tests
 )
 
 lazy val unprovidedDependencies = Seq(
 //  "com.github.fommil.netlib" % "all" % "1.1.2"
-//  "org.scalactic" %% "scalactic" % "3.0.1",
-//  "org.scalatest" %% "scalatest" % "3.0.1" % "test"
+  "org.scalactic" %% "scalactic" % "3.0.1",
+  "org.scalatest" %% "scalatest" % "3.0.1" % "test"
 )
 
 libraryDependencies ++= unprovidedDependencies

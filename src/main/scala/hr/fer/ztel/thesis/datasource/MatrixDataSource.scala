@@ -25,7 +25,7 @@ object MatrixDataSource extends Serializable {
       .map(t => (t(0).toInt, t(1).toInt, t(2).toInt, t(3).toInt, t(4).toInt, t(5).toInt))
       .flatMap { case (itemId1, itemId2, a, b, c, d) =>
         val similarity = measure.compute(a, b, c, d)
-        // associative item-item entries (x, y) (y, x)
+        // commutative item-item entries (x, y) (y, x)
         Seq((itemId1, (itemId2, similarity)), (itemId2, (itemId1, similarity)))
       }
       .rdd
@@ -60,7 +60,7 @@ object MatrixDataSource extends Serializable {
           val (item1, item2, a, b, c, d) =
             (t(0).toInt, t(1).toInt, t(2).toInt, t(3).toInt, t(4).toInt, t(5).toInt)
           val similarity = measure.compute(a, b, c, d)
-          // associative item-item entries (x, y) (y, x)
+          // commutative item-item entries (x, y) (y, x)
           val array = ArrayBuffer.empty[(Int, (Int, Double))]
           if (localBoughtItems contains item1)
             array += (item1 -> (item2, similarity))

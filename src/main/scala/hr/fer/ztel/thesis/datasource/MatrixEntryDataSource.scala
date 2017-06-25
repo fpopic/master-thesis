@@ -65,7 +65,7 @@ object MatrixEntryDataSource extends Serializable {
       itemItemRDD
         .flatMap { case (item1, item2, a, b, c, d) =>
           val similarity = measure.compute(a, b, c, d)
-          // associative item-item entries (x, y) (y, x)
+          // commutative item-item entries (x, y) (y, x)
           Seq((item1, (item2, similarity)), (item2, (item1, similarity)))
         }
         .rdd
@@ -80,7 +80,7 @@ object MatrixEntryDataSource extends Serializable {
       itemItemRDD
         .flatMap { case (item1, item2, a, b, c, d) =>
           val similarity = measure.compute(a, b, c, d)
-          // associative item-item entries (x, y) (y, x)
+          // commutative item-item entries (x, y) (y, x)
           Seq(MatrixEntry(item1, item2, similarity), MatrixEntry(item2, item1, similarity))
         }
         .rdd
