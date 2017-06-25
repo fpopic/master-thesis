@@ -7,8 +7,8 @@ import org.apache.spark.sql.SparkSession
 
 class SparkSessionHandler(args: Array[String]) extends Serializable {
 
-  if (args.length != 6) {
-    println("Wrong args, should be: [folder] [user-item] [item-item] [normalize] [recommendations] [k] ")
+  if (args.length != 7) {
+    println("Wrong args, should be: [folder] [user-item] [item-item] [measure] [normalize] [recommendations] [k] ")
     System exit 1
   }
 
