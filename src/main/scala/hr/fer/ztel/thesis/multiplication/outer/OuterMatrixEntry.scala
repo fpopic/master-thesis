@@ -11,12 +11,10 @@ object OuterMatrixEntry {
     val handler = new SparkSessionHandler(args)
     implicit val spark = handler.getSparkSession
 
-    val measure = new CosineSimilarityMeasure(false)
-
     val userItemEntries = MatrixEntryDataSource.readUserItemEntries(handler.userItemPath)
       .map(x => (x.j, (x.i, x.value)))
 
-    val itemItemEntries = MatrixEntryDataSource.readItemItemEntries(handler.itemItemPath, measure)
+    val itemItemEntries = MatrixEntryDataSource.readItemItemEntries(handler.itemItemPath, handler.measure)
       .map(x => (x.i, (x.j, x.value)))
 
     val k = handler.topK

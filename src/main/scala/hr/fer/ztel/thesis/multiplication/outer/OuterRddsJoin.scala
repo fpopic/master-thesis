@@ -13,9 +13,8 @@ object OuterRddsJoin {
   def main(args: Array[String]): Unit = {
 
     val handler = new SparkSessionHandler(args)
-    implicit val spark: SparkSession = handler.getSparkSession
+    implicit val spark = handler.getSparkSession
 
-    val measure = new CosineSimilarityMeasure(handler.normalize)
     val partitioner = Some(new HashPartitioner(16))
 
     val itemUserMatrix: RDD[(Int, Array[Int])] = // (item, [user])
@@ -25,7 +24,7 @@ object OuterRddsJoin {
     val broadcastedBoughtItems = spark.sparkContext.broadcast(itemUserMatrix.keys.collect)
 
     val boughtItemItemMatrix: RDD[(Int, Map[Int, Double])] = // (item, [item, sim])
-      readBoughtItemItemMatrix(handler.itemItemPath, measure, broadcastedBoughtItems, partitioner)
+      readBoughtItemItemMatrix(handler.itemItemPath, handler.measure, broadcastedBoughtItems, partitioner)
 
     broadcastedBoughtItems.unpersist()
 

@@ -6,8 +6,8 @@ lazy val root = (project in file(".")).settings(
   startYear := Some(2017),
   mainClass in Compile := Some("hr.fer.ztel.thesis.Main"),
   assemblyOption in assembly := (assemblyOption in assembly).value.copy(includeScala = false),
-  parallelExecution in Test := true
-  //,test in assembly := {} // remove if you want to start tests
+  parallelExecution in Test := true,
+  test in assembly := {} // remove if you want to start tests
 )
 
 lazy val unprovidedDependencies = Seq(

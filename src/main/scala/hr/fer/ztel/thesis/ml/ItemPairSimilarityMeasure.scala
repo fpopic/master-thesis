@@ -67,7 +67,7 @@ class YuleQSimilarityMeasure(override val normalize: Boolean = true) extends Ite
 class CosineSimilarityMeasure(override val normalize: Boolean = true) extends ItemPairSimilarityMeasure {
 
   def compute(a: Int, b: Int, c: Int, d: Int): Double = {
-    if (a == 0 && b == 0 && c == 0) 0.5 // instead of NaN
+    if (a == 0 && b == 0 && c == 0) 0.0 // instead of NaN
     else a / math.sqrt((a + b) * (a + c))
   }
 }

@@ -1,11 +1,12 @@
 package hr.fer.ztel.thesis.datasource
 
-import hr.fer.ztel.thesis.datasource.ModelValidator.{isParsableUserItemRecord, isParsableItemItemRecord}
+import hr.fer.ztel.thesis.datasource.ModelValidator.{isParsableItemItemRecord, isParsableUserItemRecord}
+import hr.fer.ztel.thesis.ml.ItemPairSimilarityMeasure
 import hr.fer.ztel.thesis.ml.SparseVectorOperators._
-import hr.fer.ztel.thesis.ml.{ItemPairSimilarityMeasure, SparseVectorOperators}
 import org.apache.spark.mllib.linalg.distributed.MatrixEntry
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.storage.StorageLevel
 
 object MatrixEntryDataSource extends Serializable {
 
@@ -24,10 +25,9 @@ object MatrixEntryDataSource extends Serializable {
       .agg("quantity" -> "sum")
       .where($"sum(quantity)" >= 1.0)
       .as[(Int, Int, Double)]
-      .map {
-        case (user, item, _) => MatrixEntry(user, item, 1.0)
-      }
+      .map { case (user, item, _) => MatrixEntry(user, item, 1.0) }
       .rdd
+      .persist(StorageLevel.MEMORY_ONLY)
 
   }
 
@@ -48,6 +48,8 @@ object MatrixEntryDataSource extends Serializable {
       .as[(Int, Int, Double)]
       .map { case (item, user, _) => MatrixEntry(item, user, 1.0) }
       .rdd
+      .persist(StorageLevel.MEMORY_ONLY)
+
   }
 
   def readItemItemEntries(path: String, measure: ItemPairSimilarityMeasure)
@@ -60,6 +62,8 @@ object MatrixEntryDataSource extends Serializable {
       .map(_.split(","))
       .filter(isParsableItemItemRecord(_))
       .map(t => (t(0).toInt, t(1).toInt, t(2).toInt, t(3).toInt, t(4).toInt, t(5).toInt))
+      .persist(StorageLevel.MEMORY_ONLY)
+
 
     if (measure.normalize)
       itemItemRDD

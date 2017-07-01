@@ -1,7 +1,6 @@
 package hr.fer.ztel.thesis.multiplication.outer
 
 import hr.fer.ztel.thesis.datasource.MatrixDataSource.{readBoughtItemItemMatrix, readItemUserMatrix}
-import hr.fer.ztel.thesis.ml.CosineSimilarityMeasure
 import hr.fer.ztel.thesis.ml.SparseVectorOperators._
 import hr.fer.ztel.thesis.spark.SparkSessionHandler
 import org.apache.spark.broadcast.Broadcast
@@ -14,15 +13,13 @@ object OuterMapJoin {
     val handler = new SparkSessionHandler(args)
     implicit val spark = handler.getSparkSession
 
-    val measure = new CosineSimilarityMeasure(handler.normalize)
-
     val itemUserMatrix = readItemUserMatrix(handler.userItemPath)
 
     // to reduce join (shuffle size), discarding all unmatched rows/cols in item-item matrix
     val broadcastedBoughtItems = spark.sparkContext.broadcast(itemUserMatrix.keys.collect)
 
     val boughtItemItemMatrix: RDD[(Int, Map[Int, Double])] = // (item, [item, sim])
-      readBoughtItemItemMatrix(handler.itemItemPath, measure, broadcastedBoughtItems)
+      readBoughtItemItemMatrix(handler.itemItemPath, handler.measure, broadcastedBoughtItems)
 
     broadcastedBoughtItems.unpersist()
 

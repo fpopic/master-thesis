@@ -1,6 +1,6 @@
 package hr.fer.ztel.thesis
 
-import hr.fer.ztel.thesis.multiplication.block.SubMatricesMultiplication
+import hr.fer.ztel.thesis.multiplication.block.BlocksMultiplication
 import hr.fer.ztel.thesis.multiplication.inner.InnerCartesianRdds
 import hr.fer.ztel.thesis.multiplication.outer.{OuterMapJoin, OuterMatrixEntry, OuterRddsJoin}
 
@@ -19,14 +19,11 @@ object Main {
     evaluation hdfs:///user/rovkp/fpopic/ customer_matrix.csv.indexed item_matrix.csv.indexed cos false recommendations 5
   */
 
-  //TODO MEASURE PARSER treba ukljuciti
-
-  def main(args : Array[String]) : Unit = {
+  def main(args: Array[String]): Unit = {
 
     if (args.length != 8) {
-      println("Args: " + args.mkString(" "))
-      println("Wrong args! [multiplication] [folder] [customer-item] [item-item] [normalize] [recommendations] [k]")
-      println("[multiplication] 1=>InnerCartesianRdds, 2=>OuterMapJoin, 3=>OuterRdds, 4=>BlockMatrices, 5=>OuterMatrixEntry")
+      println(s"Wrong num of args: ${args.length}")
+      println("Wrong args, Should: [op] [folder] [customer-item] [item-item] [measure] [normalize] [output] [k]")
       System exit 1
     }
 
@@ -34,7 +31,7 @@ object Main {
       case "inner" => InnerCartesianRdds.main(args.tail)
       case "outer" => OuterRddsJoin.main(args.tail)
       case "outer-mapjoin" => OuterMapJoin.main(args.tail)
-      case "blocks" => SubMatricesMultiplication.main(args.tail)
+      case "blocks" => BlocksMultiplication.main(args.tail)
       case "outer-entry" => OuterMatrixEntry.main(args.tail)
       case "evaluation" => EvaluationMain.main(args.tail)
     }

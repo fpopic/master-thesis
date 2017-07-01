@@ -8,14 +8,12 @@ import org.apache.spark.rdd.RDD
 
 object InnerCartesianRdds {
 
-  def main(args : Array[String]) : Unit = {
+  def main(args: Array[String]): Unit = {
 
     val handler = new SparkSessionHandler(args)
     implicit val spark = handler.getSparkSession
 
-    val measure = new CosineSimilarityMeasure(handler.normalize)
-
-    val itemItemMatrix: RDD[(Int, Map[Int, Double])] = readItemItemMatrix(handler.itemItemPath, measure)
+    val itemItemMatrix: RDD[(Int, Map[Int, Double])] = readItemItemMatrix(handler.itemItemPath, handler.measure)
 
     val userItemMatrix: RDD[(Int, Array[Int])] = readUserItemMatrix(handler.userItemPath)
 
@@ -23,12 +21,12 @@ object InnerCartesianRdds {
 
     val recommendationMatrix = (userItemMatrix cartesian itemItemMatrix)
       .map { case ((user, userVector), (item, itemVector)) =>
-          (user, (item, dot(userVector, itemVector)))
+        (user, (item, dot(userVector, itemVector)))
       }
       .groupByKey
       .map { case (user, utilities) =>
-          val items = utilities.toArray.sortBy(_._2).map(_._1).takeRight(k)
-          s"$user:${items.mkString(",")}"
+        val items = utilities.toArray.sortBy(_._2).map(_._1).takeRight(k)
+        s"$user:${items.mkString(",")}"
       }
 
     recommendationMatrix.saveAsTextFile(handler.recommendationsPath)
