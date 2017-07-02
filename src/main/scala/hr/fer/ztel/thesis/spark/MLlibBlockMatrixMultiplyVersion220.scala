@@ -20,7 +20,7 @@ package org.apache.spark.mllib.linalg.distributed
 import org.apache.spark.mllib.linalg._
 import org.apache.spark.{Partitioner, SparkException}
 
-object BlockMatrixMultiply220 extends Serializable {
+object MLlibBlockMatrixMultiplyVersion220 extends Serializable {
 
   /** Block (i,j) --> Set of destination partitions */
   private type BlockDestinations = Map[(Int, Int), Set[Int]]

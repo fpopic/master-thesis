@@ -1,12 +1,10 @@
 package hr.fer.ztel.thesis.multiplication.outer
 
 import hr.fer.ztel.thesis.datasource.MatrixDataSource._
-import hr.fer.ztel.thesis.ml.CosineSimilarityMeasure
-import hr.fer.ztel.thesis.ml.SparseVectorOperators._
 import hr.fer.ztel.thesis.spark.SparkSessionHandler
+import hr.fer.ztel.thesis.sparse_linalg.SparseVectorOperators._
 import org.apache.spark.HashPartitioner
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.SparkSession
 
 object OuterRddsJoin {
 
@@ -24,17 +22,14 @@ object OuterRddsJoin {
     val broadcastedBoughtItems = spark.sparkContext.broadcast(itemUserMatrix.keys.collect)
 
     val boughtItemItemMatrix: RDD[(Int, Map[Int, Double])] = // (item, [item, sim])
-      readBoughtItemItemMatrix(handler.itemItemPath, handler.measure, broadcastedBoughtItems, partitioner)
-
-    broadcastedBoughtItems.unpersist()
+      readBoughtItemItemMatrix(handler.itemItemPath, handler.measure, handler.normalize, broadcastedBoughtItems, partitioner)
 
     // join should produce at most 40k out of 67k tuples in shuffle-u
     val join = itemUserMatrix.join(boughtItemItemMatrix, partitioner.get)
 
-    itemUserMatrix.unpersist()
-    boughtItemItemMatrix.unpersist()
-
-    val k = handler.topK
+    val itemSeenByUsersBroadcast = spark.sparkContext.broadcast(
+      itemUserMatrix.mapValues(_.toSet).collectAsMap.toMap
+    )
 
     val recommendations = join
       .flatMap { case (_, (userVector, itemVector)) => outer(userVector, itemVector) }
@@ -43,14 +38,18 @@ object OuterRddsJoin {
       .map { case ((user, item), utility) => (user, (item, utility)) }
       // by (user) key
       .groupByKey
-      .map { case (user, utilities) =>
-        val items = utilities.toArray.sortBy(_._2).map(_._1).takeRight(k)
-        s"$user:${items.mkString(",")}"
+      .mapPartitions {
+        val localItemSeenByUsers = itemSeenByUsersBroadcast.value
+        _.map { case (user, utilities) =>
+          val unseenItems = argTopK(utilities.toArray, handler.topK)
+            .filterNot(localItemSeenByUsers(_).contains(user))
+
+          s"$user:${unseenItems.mkString(",")}"
+        }
       }
 
     recommendations.saveAsTextFile(handler.recommendationsPath)
 
-    println(s"Recommendations: ${recommendations.count} saved in: ${handler.recommendationsPath}.")
-
+    println(s"Recommendations saved in: ${handler.recommendationsPath}.")
   }
 }

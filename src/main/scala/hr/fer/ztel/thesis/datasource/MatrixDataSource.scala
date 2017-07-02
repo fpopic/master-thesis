@@ -1,56 +1,63 @@
 package hr.fer.ztel.thesis.datasource
 
 import hr.fer.ztel.thesis.datasource.ModelValidator._
-import hr.fer.ztel.thesis.ml.ItemPairSimilarityMeasure
-import hr.fer.ztel.thesis.ml.SparseVectorOperators._
+import hr.fer.ztel.thesis.measure.ItemPairSimilarityMeasure
+import hr.fer.ztel.thesis.sparse_linalg.SparseVectorOperators._
 import org.apache.spark.Partitioner
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{Dataset, SparkSession}
 
 import scala.collection.mutable.ArrayBuffer
 
 object MatrixDataSource extends Serializable {
 
   def readItemItemMatrix(path: String, measure: ItemPairSimilarityMeasure,
-    partitioner: Option[Partitioner] = None)
+    normalizeRows: Boolean, partitioner: Option[Partitioner] = None)
     (implicit spark: SparkSession): RDD[(Int, Map[Int, Double])] = {
 
     import spark.implicits._
 
-    val itemItemRDD = spark.read
+    val itemItemEntriesRDD = spark.read
       .textFile(path)
       .map(_.split(","))
       .filter(isParsableItemItemRecord(_))
       .map(t => (t(0).toInt, t(1).toInt, t(2).toInt, t(3).toInt, t(4).toInt, t(5).toInt))
       .flatMap { case (itemId1, itemId2, a, b, c, d) =>
         val similarity = measure.compute(a, b, c, d)
-        // commutative item-item entries (x, y) (y, x)
+        // commutative entries (x, y) (y, x)
         Seq((itemId1, (itemId2, similarity)), (itemId2, (itemId1, similarity)))
       }
       .rdd
 
-    val itemVectors = if (partitioner.isDefined)
-      itemItemRDD.groupByKey(partitioner.get)
-    else
-      itemItemRDD.groupByKey
+    val itemItemMatrixRDD =
+      if (normalizeRows)
+        itemItemEntriesRDD
+          .groupByKey
+          .mapValues(itemVector => normalize(itemVector.toArray))
+          .flatMap { case (item, itemRow) =>
+            itemRow.map { case (otherItem, similarity) =>
+              (otherItem, (item, similarity)) // key is col index (rows != cols)
+            }
+          }
+      else itemItemEntriesRDD // key is row index (simetric matrix rows == cols)
 
-    itemVectors
-      .mapValues { itemVector =>
-        if (measure.normalize)
-          normalize(itemVector.toArray)
-        else
-          itemVector.toMap
-      }
+    val groupedItemMatrixRDD =
+      if (partitioner.isDefined)
+        itemItemMatrixRDD.groupByKey(partitioner.get)
+      else
+        itemItemMatrixRDD.groupByKey
+
+    groupedItemMatrixRDD.mapValues(_.toMap)
   }
 
   def readBoughtItemItemMatrix(path: String, measure: ItemPairSimilarityMeasure,
-    boughtItems: Broadcast[Array[Int]], partitioner: Option[Partitioner] = None)
+    normalizeRows: Boolean, boughtItems: Broadcast[Array[Int]], partitioner: Option[Partitioner] = None)
     (implicit spark: SparkSession): RDD[(Int, Map[Int, Double])] = {
 
     import spark.implicits._
 
-    val itemItemRDD = spark.read
+    val itemItemEntriesRDD = spark.read
       .textFile(path)
       .map(_.split(","))
       .filter(isParsableItemItemRecord(_))
@@ -73,19 +80,25 @@ object MatrixDataSource extends Serializable {
       }
       .rdd
 
-    val itemVectors =
-      if (partitioner.isDefined)
-        itemItemRDD.groupByKey(partitioner.get)
-      else
-        itemItemRDD.groupByKey
+    val itemItemMatrixRDD =
+      if (normalizeRows)
+        itemItemEntriesRDD
+          .groupByKey
+          .mapValues(itemVector => normalize(itemVector.toArray))
+          .flatMap { case (item, itemRow) =>
+            itemRow.map { case (otherItem, similarity) =>
+              (otherItem, (item, similarity)) // key is col index (rows != cols)
+            }
+          }
+      else itemItemEntriesRDD // key is row index (simetric matrix rows == cols)
 
-    itemVectors
-      .mapValues(itemVector => {
-        if (measure.normalize)
-          normalize(itemVector.toArray)
-        else
-          itemVector.toMap
-      })
+    val groupedItemMatrixRDD =
+      if (partitioner.isDefined)
+        itemItemMatrixRDD.groupByKey(partitioner.get)
+      else
+        itemItemMatrixRDD.groupByKey
+
+    groupedItemMatrixRDD.mapValues(_.toMap)
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

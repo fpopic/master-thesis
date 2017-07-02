@@ -11,7 +11,7 @@ lazy val root = (project in file(".")).settings(
 )
 
 lazy val unprovidedDependencies = Seq(
-//  "com.github.fommil.netlib" % "all" % "1.1.2",
+  "com.github.fommil.netlib" % "all" % "1.1.2",
   "org.scalactic" %% "scalactic" % "3.0.1",
   "org.scalatest" %% "scalatest" % "3.0.1" % "test"
 )

@@ -1,9 +1,8 @@
 package hr.fer.ztel.thesis.multiplication.outer
 
 import hr.fer.ztel.thesis.datasource.MatrixDataSource.{readBoughtItemItemMatrix, readItemUserMatrix}
-import hr.fer.ztel.thesis.ml.SparseVectorOperators._
 import hr.fer.ztel.thesis.spark.SparkSessionHandler
-import org.apache.spark.broadcast.Broadcast
+import hr.fer.ztel.thesis.sparse_linalg.SparseVectorOperators._
 import org.apache.spark.rdd.RDD
 
 object OuterMapJoin {
@@ -13,26 +12,19 @@ object OuterMapJoin {
     val handler = new SparkSessionHandler(args)
     implicit val spark = handler.getSparkSession
 
-    val itemUserMatrix = readItemUserMatrix(handler.userItemPath)
+    val itemUserMatrix: RDD[(Int, Array[Int])] = readItemUserMatrix(handler.userItemPath)
 
     // to reduce join (shuffle size), discarding all unmatched rows/cols in item-item matrix
     val broadcastedBoughtItems = spark.sparkContext.broadcast(itemUserMatrix.keys.collect)
 
-    val boughtItemItemMatrix: RDD[(Int, Map[Int, Double])] = // (item, [item, sim])
-      readBoughtItemItemMatrix(handler.itemItemPath, handler.measure, broadcastedBoughtItems)
+    val boughtItemItemMatrix = // (item, [item, sim])
+      readBoughtItemItemMatrix(handler.itemItemPath, handler.measure, handler.normalize, broadcastedBoughtItems)
 
-    broadcastedBoughtItems.unpersist()
-
-    val itemUserMatrixBroadcasted: Broadcast[Array[(Int, Array[Int])]] =
-      spark.sparkContext.broadcast(itemUserMatrix.collect)
-
-    itemUserMatrix.unpersist(true)
-
-    val k = handler.topK
+    val itemUserMatrixBroadcasted = spark.sparkContext.broadcast(itemUserMatrix.mapValues(_.toSet).collectAsMap.toMap)
 
     val recommendations = boughtItemItemMatrix
       .mapPartitions {
-        val localItemUserMap = itemUserMatrixBroadcasted.value.toMap
+        val localItemUserMap = itemUserMatrixBroadcasted.value
         _.flatMap { case (item, itemVector) =>
           // map-join
           val userVector = localItemUserMap.get(item)
@@ -50,17 +42,19 @@ object OuterMapJoin {
       .map { case ((user, item), utility) => (user, (item, utility))
       }
       .groupByKey
-      .map { case (user, utilities) =>
-        val items = utilities.toArray.sortBy(_._2).map(_._1).takeRight(k)
-        s"$user:${items.mkString(",")}"
+      .mapPartitions {
+        val localItemUserMap = itemUserMatrixBroadcasted.value
+        _.map { case (user, utilities) =>
+          val unseenItems = argTopK(utilities.toArray, handler.topK)
+            .filterNot(localItemUserMap(_).contains(user))
+
+          s"$user:${unseenItems.mkString(",")}"
+        }
+
       }
 
-    boughtItemItemMatrix.unpersist()
-
-    println(s"Recommendations: ${recommendations.count} saved in: ${handler.recommendationsPath}.")
+    println(s"Recommendations saved in: ${handler.recommendationsPath}.")
 
     recommendations.saveAsTextFile(handler.recommendationsPath)
-
   }
-
 }

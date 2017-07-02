@@ -1,6 +1,6 @@
 package hr.fer.ztel.thesis
 
-import hr.fer.ztel.thesis.multiplication.block.BlocksMultiplication
+import hr.fer.ztel.thesis.multiplication.block.Blocks
 import hr.fer.ztel.thesis.multiplication.inner.InnerCartesianRdds
 import hr.fer.ztel.thesis.multiplication.outer.{OuterMapJoin, OuterMatrixEntry, OuterRddsJoin}
 
@@ -16,7 +16,14 @@ object Main {
     --conf spark.memory.fraction=0.6 \
     --conf spark.yarn.maxAppAttempts=1 \
     /home/rovkp/fpopic/spark-recommender-assembly-1.0.jar \
-    evaluation hdfs:///user/rovkp/fpopic/ customer_matrix.csv.indexed item_matrix.csv.indexed cos false recommendations 5
+    evaluation
+    hdfs:///user/rovkp/fpopic/
+    customer_matrix.csv.indexed
+    item_matrix.csv.indexed
+    cos
+    false
+    recommendations
+    5
   */
 
   def main(args: Array[String]): Unit = {
@@ -31,7 +38,7 @@ object Main {
       case "inner" => InnerCartesianRdds.main(args.tail)
       case "outer" => OuterRddsJoin.main(args.tail)
       case "outer-mapjoin" => OuterMapJoin.main(args.tail)
-      case "blocks" => BlocksMultiplication.main(args.tail)
+      case "blocks" => Blocks.main(args.tail)
       case "outer-entry" => OuterMatrixEntry.main(args.tail)
       case "evaluation" => EvaluationMain.main(args.tail)
     }

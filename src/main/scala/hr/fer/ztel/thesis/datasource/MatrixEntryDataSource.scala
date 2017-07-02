@@ -1,8 +1,8 @@
 package hr.fer.ztel.thesis.datasource
 
 import hr.fer.ztel.thesis.datasource.ModelValidator.{isParsableItemItemRecord, isParsableUserItemRecord}
-import hr.fer.ztel.thesis.ml.ItemPairSimilarityMeasure
-import hr.fer.ztel.thesis.ml.SparseVectorOperators._
+import hr.fer.ztel.thesis.measure.ItemPairSimilarityMeasure
+import hr.fer.ztel.thesis.sparse_linalg.SparseVectorOperators
 import org.apache.spark.mllib.linalg.distributed.MatrixEntry
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
@@ -52,7 +52,7 @@ object MatrixEntryDataSource extends Serializable {
 
   }
 
-  def readItemItemEntries(path: String, measure: ItemPairSimilarityMeasure)
+  def readItemItemEntries(path: String, measure: ItemPairSimilarityMeasure, normalizeRows: Boolean)
     (implicit spark: SparkSession): RDD[MatrixEntry] = {
 
     import spark.implicits._
@@ -65,7 +65,7 @@ object MatrixEntryDataSource extends Serializable {
       .persist(StorageLevel.MEMORY_ONLY)
 
 
-    if (measure.normalize)
+    if (normalizeRows)
       itemItemRDD
         .flatMap { case (item1, item2, a, b, c, d) =>
           val similarity = measure.compute(a, b, c, d)
@@ -74,7 +74,7 @@ object MatrixEntryDataSource extends Serializable {
         }
         .rdd
         .groupByKey
-        .mapValues(itemVector => normalize(itemVector.toArray))
+        .mapValues(itemVector => SparseVectorOperators.normalize(itemVector.toArray))
         .flatMap { case (item, itemVector) => itemVector.map {
           case (otherItem, similarity) => MatrixEntry(item, otherItem, similarity)
         }

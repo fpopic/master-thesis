@@ -2,8 +2,8 @@ package hr.fer.ztel.thesis.spark
 
 import java.time.Instant
 
-import hr.fer.ztel.thesis.ml.ItemPairSimilarityMeasure
-import hr.fer.ztel.thesis.ml.ItemPairSimilarityMeasure._
+import hr.fer.ztel.thesis.measure.ItemPairSimilarityMeasure
+import hr.fer.ztel.thesis.measure.ItemPairSimilarityMeasure._
 import org.apache.spark.sql.SparkSession
 
 class SparkSessionHandler(args: Array[String]) extends Serializable {
@@ -19,7 +19,7 @@ class SparkSessionHandler(args: Array[String]) extends Serializable {
   val itemItemPath: String = folder + args(2)
   val measureStr: String = args(3).toLowerCase
   val normalize: Boolean = args(4).toLowerCase.toBoolean
-  val measure: ItemPairSimilarityMeasure = parseMeasure(measureStr, normalize).get
+  val measure: ItemPairSimilarityMeasure = parseMeasure(measureStr).get
 
   val time: String = Instant.ofEpochMilli(System.currentTimeMillis)
     .toString.replace(":", "-").replace(".", "-")

@@ -1,5 +1,6 @@
-package hr.fer.ztel.thesis.ml
+package hr.fer.ztel.thesis.sparse_linalg
 
+import hr.fer.ztel.thesis.measure.{ItemPairSimilarityMeasure, YuleQSimilarityMeasure}
 import org.scalatest.{FlatSpec, Matchers}
 
 class YuleQSimilarityMeasureTest extends FlatSpec with Matchers {
