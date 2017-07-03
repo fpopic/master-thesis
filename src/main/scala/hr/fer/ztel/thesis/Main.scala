@@ -20,17 +20,18 @@ object Main {
     hdfs:///user/rovkp/fpopic/
     customer_matrix.csv.indexed
     item_matrix.csv.indexed
-    cos
+    llr
     false
     recommendations
     5
+    1024
   */
 
   def main(args: Array[String]): Unit = {
 
-    if (args.length != 8) {
-      println(s"Wrong num of args: ${args.length}")
-      println("Wrong args, Should: [op] [folder] [customer-item] [item-item] [measure] [normalize] [output] [k]")
+    if (args.length != 9) {
+      println(s"Wrong number of input args: ${args.length}")
+      println("Input args: [op] [folder] [customer-item] [item-item] [measure] [normalize] [output] [k] [blocksize]")
       System exit 1
     }
 

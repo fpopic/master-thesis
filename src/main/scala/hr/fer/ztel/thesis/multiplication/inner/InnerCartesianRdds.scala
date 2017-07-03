@@ -34,6 +34,7 @@ object InnerCartesianRdds {
           s"$user:${items.mkString(",")}"
         }
       }
+
     recommendationMatrix.saveAsTextFile(handler.recommendationsPath)
 
     println(s"Recommendations saved in: ${handler.recommendationsPath}.")

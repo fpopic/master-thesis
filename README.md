@@ -7,3 +7,22 @@ Moreover, the recommendation algorithm supports three different distributed matr
 The entire recommender system source code is written in Scala programming language based on Apache Spark. 
 However, the data pre-processing scripts are written in C++ programming language executed in a single-node environment. 
 The tests and performance evaluation of the implemented algorithm were executed on a Cloudera cluster using real dataset obtained from the particular case study.
+
+# Running
+
+```
+$spark-submit \
+    --class hr.fer.ztel.thesis.Main \
+    --master yarn --deploy-mode cluster \
+    ...
+    <jar> \
+    <mode: inner, outer, blocks> \
+    <input folder> \
+    <user-item file> \
+    <item-item file> \
+    <similarity measure: cos, yuleq, llr> \
+    <normalisation: true, false> \
+    <output file> \
+    <topK: 5, ... > \
+    <block size: 1024, 2048, ... >
+```

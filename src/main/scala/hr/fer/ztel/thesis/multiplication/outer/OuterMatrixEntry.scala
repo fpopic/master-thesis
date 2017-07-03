@@ -40,7 +40,7 @@ object OuterMatrixEntry {
 
     recommendations.saveAsTextFile(handler.recommendationsPath)
 
-    println(s"Recommendations: ${recommendations.count} saved in: ${handler.recommendationsPath}.")
+    println(s"Recommendations saved in: ${handler.recommendationsPath}.")
 
   }
 }

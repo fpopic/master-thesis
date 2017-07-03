@@ -17,12 +17,15 @@ object Blocks {
     val userItemEntries = readUserItemEntries(handler.userItemPath)
     val itemItemEntries = readItemItemEntries(handler.itemItemPath, handler.measure, handler.normalize)
 
-    // precomputed (max number, possbile that some users were filtered by quantity treshold after)
-    val numUsers = spark.sparkContext.textFile(handler.usersSizePath, 1).first.toInt
-    val numItems = spark.sparkContext.textFile(handler.itemsSizePath, 1).first.toInt
+    // precomputed (max number (upper bound),
+    // it is possible that some users were filtered by quantity treshold
+    val numUsers = spark.read.textFile(handler.usersSizePath).first.toInt
+    val numItems = spark.read.textFile(handler.itemsSizePath).first.toInt
 
-    val C = new CoordinateMatrix(userItemEntries, numUsers, numItems).toBlockMatrix()
-    val S = new CoordinateMatrix(itemItemEntries, numItems, numItems).toBlockMatrix()
+    val B = handler.blockSize
+
+    val C = new CoordinateMatrix(userItemEntries, numUsers, numItems).toBlockMatrix(B, B)
+    val S = new CoordinateMatrix(itemItemEntries, numItems, numItems).toBlockMatrix(B, B)
 
     val R = multiply(C, S)
 
