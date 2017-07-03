@@ -22,16 +22,14 @@ trait ItemPairSimilarityMeasure extends Serializable {
 
 object ItemPairSimilarityMeasure extends Serializable {
 
-  def parseMeasure(measure: String): Option[ItemPairSimilarityMeasure] = {
-    measure match {
-      case "cos" => Some(new CosineSimilarityMeasure)
-      case "llr" => Some(new LogLikelihoodRatioSimilarityMeasure)
-      case "yuleq" => Some(new YuleQSimilarityMeasure)
-      case _ =>
-        println(s""""Wrong similiarity measure: $measure! Supported measures: "cos", "llr", "yuleq"""")
-        System exit 1
-        None
-    }
+  def parseMeasure(measure: String): Option[ItemPairSimilarityMeasure] = measure match {
+    case "cos" => Some(new CosineSimilarityMeasure)
+    case "llr" => Some(new LogLikelihoodRatioSimilarityMeasure)
+    case "yuleq" => Some(new YuleQSimilarityMeasure)
+    case _ =>
+      println(s""""Wrong similiarity measure: $measure! Supported measures: "cos", "llr", "yuleq"""")
+      System exit 1
+      None
   }
 
 }

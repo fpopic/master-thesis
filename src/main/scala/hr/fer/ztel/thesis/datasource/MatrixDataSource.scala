@@ -112,7 +112,7 @@ object MatrixDataSource extends Serializable {
       .textFile(path)
       .map(_.split(","))
       .filter(isParsableUserItemRecord(_))
-      .map { case Array(userId, itemId, quantity) =>
+      .map { case Array(userId, _, itemId, quantity) =>
         (itemId.toInt, userId.toInt, quantity.toDouble)
       }
       .toDF("item", "user", "quantity")

@@ -12,7 +12,7 @@ object OuterMapJoin {
     val handler = new SparkSessionHandler(args)
     implicit val spark = handler.getSparkSession
 
-    val itemUserMatrix: RDD[(Int, Array[Int])] = readItemUserMatrix(handler.userItemPath)
+    val itemUserMatrix = readItemUserMatrix(handler.userItemPath)
 
     // to reduce join (shuffle size), discarding all unmatched rows/cols in item-item matrix
     val broadcastedBoughtItems = spark.sparkContext.broadcast(itemUserMatrix.keys.collect)
@@ -50,7 +50,6 @@ object OuterMapJoin {
 
           s"$user:${unseenItems.mkString(",")}"
         }
-
       }
 
     println(s"Recommendations saved in: ${handler.recommendationsPath}.")

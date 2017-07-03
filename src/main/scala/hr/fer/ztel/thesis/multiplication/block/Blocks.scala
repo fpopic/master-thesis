@@ -17,7 +17,7 @@ object Blocks {
     val userItemEntries = readUserItemEntries(handler.userItemPath)
     val itemItemEntries = readItemItemEntries(handler.itemItemPath, handler.measure, handler.normalize)
 
-    // precomputed (max number (upper bound),
+    // precomputed max number (upper bound) with C++ indexer,
     // it is possible that some users were filtered by quantity treshold
     val numUsers = spark.read.textFile(handler.usersSizePath).first.toInt
     val numItems = spark.read.textFile(handler.itemsSizePath).first.toInt
@@ -36,18 +36,17 @@ object Blocks {
         .collectAsMap.toMap
     )
 
-    val recommendations = R.toIndexedRowMatrix.rows
-      .mapPartitions {
-        val localUserSeenItems = userSeenItemsBroadcast.value
-        _.filter(row => localUserSeenItems.contains(row.index.toInt))
-          .map { row =>
-            val user = row.index.toInt
-            val unseenItems = argtopk(row.vector.toBreeze, handler.topK)
-              .filterNot(item => localUserSeenItems(user).contains(item))
+    val recommendations = R.toIndexedRowMatrix.rows.mapPartitions {
+      val localUserSeenItems = userSeenItemsBroadcast.value
+      _.filter(row => localUserSeenItems.contains(row.index.toInt))
+        .map { row =>
+          val user = row.index.toInt
+          val unseenItems = argtopk(row.vector.toBreeze, handler.topK)
+            .filterNot(item => localUserSeenItems(user).contains(item))
 
-            s"$user:${unseenItems.mkString(",")}"
-          }
-      }
+          s"$user:${unseenItems.mkString(",")}"
+        }
+    }
 
     recommendations.saveAsTextFile(handler.recommendationsPath)
 
