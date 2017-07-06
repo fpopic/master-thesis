@@ -19,11 +19,13 @@ object MatrixEntryDataSource extends Serializable {
       .textFile(path)
       .map(_.split(","))
       .filter(isParsableUserItemRecord(_))
-      .map { case Array(user, _, item, quantity) => (user.toInt, item.toInt, quantity.toDouble) }
+      .map { case Array(user, timestamp, item, quantity) =>
+        (user.toInt, item.toInt, quantity.toDouble)
+      }
       .toDF("user", "item", "quantity")
       .groupBy("user", "item")
       .agg("quantity" -> "sum")
-      .where($"sum(quantity)" >= 1.0)
+      .where($"sum(quantity)" >= 0.0)
       .as[(Int, Int, Double)]
       .map { case (user, item, _) => MatrixEntry(user, item, 1.0) }
       .rdd
@@ -40,7 +42,9 @@ object MatrixEntryDataSource extends Serializable {
       .textFile(path)
       .map(_.split(","))
       .filter(isParsableUserItemRecord(_))
-      .map { case Array(user, _, item, quantity) => (item.toInt, user.toInt, quantity.toDouble) }
+      .map { case Array(user, timestamp, item, quantity) =>
+        (item.toInt, user.toInt, quantity.toDouble)
+      }
       .toDF("item", "user", "quantity")
       .groupBy("item", "user")
       .agg("quantity" -> "sum")

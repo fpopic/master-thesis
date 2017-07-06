@@ -112,8 +112,8 @@ object MatrixDataSource extends Serializable {
       .textFile(path)
       .map(_.split(","))
       .filter(isParsableUserItemRecord(_))
-      .map { case Array(userId, _, itemId, quantity) =>
-        (itemId.toInt, userId.toInt, quantity.toDouble)
+      .map { case Array(user, timestamp, item, quantity) =>
+        (item.toInt, user.toInt, quantity.toDouble)
       }
       .toDF("item", "user", "quantity")
       .groupBy("item", "user")
@@ -141,10 +141,10 @@ object MatrixDataSource extends Serializable {
       .textFile(path)
       .map(_.split(","))
       .filter(isParsableUserItemRecord(_))
-      .map { case Array(userId, _, itemId, quantity) =>
-        (userId.toInt, itemId.toInt, quantity.toDouble)
+      .map { case Array(user, timestamp, item, quantity) =>
+        (user.toInt, item.toInt, quantity.toDouble)
       }
-      .toDF("user", "item", "quantit")
+      .toDF("user", "item", "quantity")
       .groupBy("user", "item")
       .agg("quantity" -> "sum")
       .where($"sum(quantity)" >= 1.0)
