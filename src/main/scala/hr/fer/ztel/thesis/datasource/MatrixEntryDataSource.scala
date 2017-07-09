@@ -25,7 +25,7 @@ object MatrixEntryDataSource extends Serializable {
       .toDF("user", "item", "quantity")
       .groupBy("user", "item")
       .agg("quantity" -> "sum")
-      .where($"sum(quantity)" >= 0.0)
+      .where($"sum(quantity)" >= 1.0)
       .as[(Int, Int, Double)]
       .map { case (user, item, _) => MatrixEntry(user, item, 1.0) }
       .rdd

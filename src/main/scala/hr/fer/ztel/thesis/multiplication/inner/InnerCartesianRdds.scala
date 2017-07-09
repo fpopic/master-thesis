@@ -17,7 +17,7 @@ object InnerCartesianRdds {
     val itemItemMatrix = readItemItemMatrix(handler.itemItemPath, handler.measure, handler.normalize)
 
     val userSeenItemsBroadcast = spark.sparkContext.broadcast(
-      userItemMatrix.mapValues(_.toSet).collectAsMap().toMap
+      userItemMatrix.mapValues(_.toSet).collectAsMap.toMap
     )
 
     val recommendationMatrix = (userItemMatrix cartesian itemItemMatrix)
@@ -27,11 +27,11 @@ object InnerCartesianRdds {
       .groupByKey
       .mapPartitions {
         val localUserSeenItems = userSeenItemsBroadcast.value
-        _.map { case (user, utilities) =>
-          val items = argTopK(utilities.toArray, handler.topK)
-            .filterNot(localUserSeenItems(user).contains(_))
+        _.map { case (user, items) =>
+          val unSeenItems = items.filterNot { case (item, _) => localUserSeenItems(user).contains(item) }
+          val unSeenTopKItems = argTopK(unSeenItems.toArray, handler.topK)
 
-          s"$user:${items.mkString(",")}"
+          s"$user:${unSeenTopKItems.mkString(",")}"
         }
       }
 

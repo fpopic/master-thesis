@@ -39,8 +39,8 @@ object Main {
       case "inner" => InnerCartesianRdds.main(args.tail)
       case "outer" => OuterRddsJoin.main(args.tail)
       case "outer-mapjoin" => OuterMapJoin.main(args.tail)
-      case "blocks" => Blocks.main(args.tail)
       case "outer-entry" => OuterMatrixEntry.main(args.tail)
+      case "blocks" => Blocks.main(args.tail)
       case "evaluation" => EvaluationMain.main(args.tail)
     }
 

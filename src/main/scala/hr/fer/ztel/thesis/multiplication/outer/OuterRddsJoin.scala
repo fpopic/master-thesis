@@ -40,11 +40,11 @@ object OuterRddsJoin {
       .groupByKey
       .mapPartitions {
         val localItemSeenByUsers = itemSeenByUsersBroadcast.value
-        _.map { case (user, utilities) =>
-          val unseenItems = argTopK(utilities.toArray, handler.topK)
-            .filterNot(localItemSeenByUsers(_).contains(user))
+        _.map { case (user, items) =>
+          val unSeenItems = items.filterNot { case (item, _) => localItemSeenByUsers(item).contains(user) }
+          val unSeenTopKItems = argTopK(unSeenItems.toArray, handler.topK)
 
-          s"$user:${unseenItems.mkString(",")}"
+          s"$user:${unSeenTopKItems.mkString(",")}"
         }
       }
 

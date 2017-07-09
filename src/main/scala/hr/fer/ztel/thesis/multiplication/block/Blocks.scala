@@ -1,8 +1,8 @@
 package hr.fer.ztel.thesis.multiplication.block
 
-import breeze.linalg.argtopk
 import hr.fer.ztel.thesis.datasource.MatrixEntryDataSource._
 import hr.fer.ztel.thesis.spark.SparkSessionHandler
+import hr.fer.ztel.thesis.sparse_linalg.SparseVectorOperators._
 import org.apache.spark.mllib.linalg.MLlibBreezeConversions._
 import org.apache.spark.mllib.linalg.distributed.MLlibBlockMatrixMultiplyVersion220._
 import org.apache.spark.mllib.linalg.distributed.{CoordinateMatrix, MatrixEntry}
@@ -41,15 +41,16 @@ object Blocks {
       _.filter(row => localUserSeenItems.contains(row.index.toInt))
         .map { row =>
           val user = row.index.toInt
-          val unseenItems = argtopk(row.vector.toBreeze, handler.topK)
-            .filterNot(item => localUserSeenItems(user).contains(item))
+          val unseenItems = row.vector.toBreeze.activeIterator
+            .filterNot { case (item, _) => localUserSeenItems(user).contains(item) }
+          val unseenTopKItems = argTopK(unseenItems.toArray, handler.topK)
 
-          s"$user:${unseenItems.mkString(",")}"
+          s"$user:${unseenTopKItems.mkString(",")}"
         }
     }
 
     recommendations.saveAsTextFile(handler.recommendationsPath)
 
-    println(s"Recommendations saved in: ${handler.recommendationsPath}.")
+    println(s"Recommendations saved in: ${handler.recommendationsPath}")
   }
 }
